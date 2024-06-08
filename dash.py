@@ -3,10 +3,14 @@ import pandas as pd
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-def load_data():
+def fetch_data(store=None):
     """
-    Carrega os dados necessários para o dashboard.
+    Simula a busca de dados necessários para o dashboard.
+    No futuro, isso será substituído por consultas ao banco de dados.
     """
+
+
+    # Simulação de leitura dos dados
     df_orders = pd.read_csv('data/Products_Purchased_Per_Minute.csv')
     df_revenue = pd.read_csv('data/Revenue_Per_Minute.csv')
     df_users = pd.read_csv('data/Unique_User_Views_Per_Product_Per_Minute.csv')
@@ -16,7 +20,14 @@ def load_data():
     df_ranking = pd.read_csv('data/Most_Viewed_Products_Per_Minute_Last_Hour.csv')
     df_median_views = pd.read_csv('data/Median_Views_Before_Purchase.csv')
     df_excess_sales = pd.read_csv('data/Total_Excess_Sales.csv')
-    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales
+    df_stores = pd.read_csv('data/Stores.csv')
+
+    # Só para ver se filtra:
+    if store != 'Todas':
+        store_id = df_stores[df_stores['Store Name'] == store]['Store ID'].iloc[0]
+        df_ranking = df_ranking[df_ranking['STORE ID'] == store_id]
+
+    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, df_stores
 
 def configure_page():
     """
@@ -86,10 +97,21 @@ def main():
     """
     Função principal que organiza o fluxo do dashboard.
     """
-    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales = load_data()
     configure_page()
-    col1, col2, col3 = st.columns(3)
+    
+    # Carregar os dados de lojas
+    df_stores = pd.read_csv('data/Stores.csv')
+    store_names = ["Todas"] + df_stores['Store Name'].tolist()
 
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        store = st.selectbox('Escolha uma loja:', store_names)
+
+    # Carregar os dados com base na loja selecionada
+    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, _ = fetch_data(store)
+    
+    col1, col2, col3 = st.columns(3)
+    
     # Produtos comprados por minuto
     with col1:
         create_metric_card('Média de Produtos Comprados por Minuto', f"{df_avg_products['Average Products Per Minute'].iloc[0]:.2f}")
