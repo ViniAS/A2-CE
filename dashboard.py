@@ -66,11 +66,14 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder
+import time
 
+@st.cache_data
 def fetch_data(store=None):
     """
     Simulates fetching necessary data for the dashboard.
     In the future, this will be replaced by database queries.
+    In the future, it will be necessary to read in parallel.
     """
     # Simulating data reading
     df_orders = pd.read_csv('data/Products_Purchased_Per_Minute.csv')
@@ -185,10 +188,6 @@ def price_monitor_page():
         # In the future, replace with actual data retrieval and processing
         st.write("Search functionality to be implemented.")  # Placeholder text
 
-
-
-
-
 def configure_dashboard_page():
     """
     Configura e exibe a página do Dashboard.
@@ -233,15 +232,19 @@ def configure_dashboard_page():
     with col_right:
         display_text_metrics(df_median_views, df_excess_sales)
 
+    # Display time statistics for each analysis
+    # display_time_statistics()
+
+
 def main():
     """
-    Função principal que organiza o fluxo do dashboard.
-    Define um controle de rádio no sidebar para navegação entre diferentes páginas do dashboard.
+    Function that organizes the dashboard flow.
+    Defines a radio control in the sidebar to navigate between different pages of the dashboard.
     """
-    # Configuração do page layout
+    # Config page
     st.set_page_config(layout="wide")
     
-    # Menu de navegação
+    # Menu
     menu = ["Dashboard", "Price Monitor"]
     choice = st.sidebar.selectbox("Menu", menu)
     

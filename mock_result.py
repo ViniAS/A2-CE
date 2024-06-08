@@ -74,11 +74,23 @@ df_average_products.to_csv(csv_path_avg_products, index=False)
 df_average_revenue.to_csv(csv_path_avg_revenue, index=False)
 df_average_users.to_csv(csv_path_avg_users, index=False)
 
-# Simulando dados para a questão do ranking de produtos mais visualizados na última hora
+# Gerando IDs de produtos, nomes de produtos, IDs de lojas e nomes de lojas
+product_ids = np.arange(1, 101)
+product_names = [f"Product {i}" for i in product_ids]
+store_ids = np.random.randint(1, 11, size=len(product_ids))
+store_names = [f"Store {i}" for i in store_ids]
 
-# Gerando IDs de produtos e visualizações em uma única hora
+# Criando um DataFrame de produtos e lojas
+df_products = pd.DataFrame({
+    "PRODUCT ID": product_ids,
+    "PRODUCT NAME": product_names,
+    "STORE ID": store_ids,
+    "STORE NAME": store_names
+})
+
+# Gerando visualizações em uma única hora
 view_date_range = pd.date_range(start, periods=60, freq='T')  # Última hora
-product_ids_hourly = np.random.randint(1, 101, size=len(view_date_range))
+product_ids_hourly = np.random.choice(product_ids, size=len(view_date_range))
 
 # Criando o DataFrame de visualizações na última hora
 df_last_hour_views = pd.DataFrame({
@@ -95,11 +107,13 @@ total_minute_views = minute_views_count.groupby('PRODUCT ID').agg({'VIEW COUNT':
 # Ordenando para obter o ranking dos produtos mais visualizados
 ranked_minute_products = total_minute_views.sort_values(by='VIEW COUNT', ascending=False).reset_index(drop=True)
 
+# Adicionando informações dos produtos e das lojas ao ranking
+ranked_minute_products = ranked_minute_products.merge(df_products, on='PRODUCT ID')
+
 # Salvando em um arquivo CSV
 csv_path_minute_hourly_views = 'data/Most_Viewed_Products_Per_Minute_Last_Hour.csv'
 ranked_minute_products.to_csv(csv_path_minute_hourly_views, index=False)
 
-csv_path_minute_hourly_views, ranked_minute_products.head()
 
 # Simulando dados para a pergunta sobre a mediana do número de vezes que um usuário visualiza um produto antes de efetuar uma compra
 
