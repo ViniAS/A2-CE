@@ -14,7 +14,9 @@ def load_data():
     df_avg_revenue = pd.read_csv('data/Average_Revenue_Per_Minute.csv')
     df_avg_users = pd.read_csv('data/Average_Unique_Users_Per_Product_Per_Minute.csv')
     df_ranking = pd.read_csv('data/Most_Viewed_Products_Per_Minute_Last_Hour.csv')
-    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking
+    df_median_views = pd.read_csv('data/Median_Views_Before_Purchase.csv')
+    df_excess_sales = pd.read_csv('data/Total_Excess_Sales.csv')
+    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales
 
 def configure_page():
     """
@@ -28,9 +30,9 @@ def create_metric_card(title, value):
     Cria um card de métrica com título e valor, utilizando HTML para estilização.
     """
     st.markdown(f"""
-        <div style="background-color: #f4f1ff; border-radius: 10px; padding: 10px; text-align: center;">
-            <h3 style="color: #5f4b8b; margin-bottom: 0;">{title}</h3>
-            <h2 style="color: #c084fc; margin-top: 5px;">{value}</h2>
+        <div style="background-color: #f4f1ff; border-radius: 10px; padding: 20px; text-align: center; height: 150px; margin-bottom: 20px;">
+            <h3 style="color: #5f4b8b; margin-bottom: 10px;">{title}</h3>
+            <h2 style="color: #c084fc; margin-top: 0; font-size: 24px;">{value}</h2>
         </div>
         """, unsafe_allow_html=True)
 
@@ -64,11 +66,27 @@ def display_ranking(df_ranking):
         theme='material',  # Usa um tema moderno
     )
 
+def display_text_metrics(df_median_views, df_excess_sales):
+    """
+    Exibe as métricas de mediana de visualizações e produtos vendidos sem estoque.
+    """
+    st.header('Outras Métricas Importantes')
+
+    create_metric_card(
+        'Mediana de Vis Antes de Comprar',
+        f"{df_median_views['MEDIAN_VIEWS'].iloc[0]:.2f}"
+    )
+
+    create_metric_card(
+        'Número de Prod Vendidos Sem Estoque',
+        f"{df_excess_sales['Total Excess Sales'].iloc[0]:.0f}"
+    )
+
 def main():
     """
     Função principal que organiza o fluxo do dashboard.
     """
-    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking = load_data()
+    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales = load_data()
     configure_page()
     col1, col2, col3 = st.columns(3)
 
@@ -87,8 +105,15 @@ def main():
         create_metric_card('Média de Usuários Únicos por Minuto', f"{df_avg_users['Average Unique Users Per Product Per Minute'].iloc[0]:.2f}")
         plot_metric(col3, df_users, 'VIEW DATE', 'UNIQUE USERS', "Usuários Únicos por Produto por Minuto", df_avg_users['Average Unique Users Per Product Per Minute'].iloc[0])
 
-    # Exibir ranking de produtos mais visualizados na última hora
-    display_ranking(df_ranking)
+    col_left, col_right = st.columns((2, 1))
+
+    # Exibir ranking de produtos mais visualizados na última hora à esquerda
+    with col_left:
+        display_ranking(df_ranking)
+
+    # Outras métricas importantes à direita
+    with col_right:
+        display_text_metrics(df_median_views, df_excess_sales)
 
 if __name__ == "__main__":
     main()
