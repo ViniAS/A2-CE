@@ -91,23 +91,30 @@ def fetch_data(store=None):
 
     return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, df_stores
 
+
 def configure_page():
     """
     Configures the layout and title of the page.
     """
-    st.set_page_config(layout="wide")
+    st.set_page_config(
+        page_title='Sales and Views Metrics Dashboard',
+        layout='wide',
+        initial_sidebar_state='expanded'
+    )
     st.title('Sales and Views Metrics Dashboard')
 
 def create_metric_card(title, value):
     """
-    Creates a metric card with a title and value using HTML for styling.
+    Creates a metric card with the title above and the value below using HTML for styling.
+    Ensures that the value doesn't overflow the box.
     """
     st.markdown(f"""
         <div style="background-color: #f4f1ff; border-radius: 10px; padding: 20px; text-align: center; height: 150px; margin-bottom: 20px;">
-            <h3 style="color: #5f4b8b; margin-bottom: 10px;">{title}</h3>
-            <h2 style="color: #c084fc; margin-top: 0; font-size: 24px;">{value}</h2>
+            <h3 style="color: #5f4b8b; margin-bottom: 5px; font-size: 16px;">{title}</h3>
+            <h1 style="color: #c084fc; font-size: 30px; margin-top: 5px;">{value}</h1>
         </div>
         """, unsafe_allow_html=True)
+
 
 def plot_metric(column, data, x_axis, y_axis, title, avg_value):
     """
@@ -136,7 +143,7 @@ def display_ranking(df_ranking):
         enable_enterprise_modules=False,
         fit_columns_on_grid_load=True,
         height=400,
-        theme='material',  # Uses a modern theme
+        theme='material',  
     )
 
 def display_text_metrics(df_median_views, df_excess_sales):
@@ -155,11 +162,38 @@ def display_text_metrics(df_median_views, df_excess_sales):
         f"{df_excess_sales['Total Excess Sales'].iloc[0]:.0f}"
     )
 
-def main():
+def price_monitor_page():
     """
-    Main function that organizes the dashboard flow.
+    Configures and displays the Price Monitor page.
     """
-    configure_page()
+    st.title('Price Monitor')
+    st.write('Use the options below to search for products based on your preferences.')
+    
+    # Criar duas colunas para os inputs com diferentes larguras
+    col1, col2 = st.columns([1, 2])  # Ajusta a largura da primeira coluna para ser menor
+    
+    # Inputs from the user
+    with col1:
+        months_to_consider = st.number_input('Number of months to consider:', min_value=1, max_value=36, step=1, key="months_input")
+        
+    with col2:
+        percentage_discount = st.slider('Percentage discount (%):', min_value=0, max_value=100, step=1, key="discount_slider")
+    
+    # Button to execute the search, on a new full-width row below the inputs
+    if st.button('Buscar produtos'):
+        # Simulate data retrieval and filtering based on user input
+        # In the future, replace with actual data retrieval and processing
+        st.write("Search functionality to be implemented.")  # Placeholder text
+
+
+
+
+
+def configure_dashboard_page():
+    """
+    Configura e exibe a página do Dashboard.
+    """
+    st.title('Sales and Views Metrics Dashboard')
     
     # Load store data
     df_stores = pd.read_csv('data/Stores.csv')
@@ -176,7 +210,7 @@ def main():
     
     # Products purchased per minute
     with col1:
-        create_metric_card('Average Products Per Minute', f"{df_avg_products['Average Products Per Minute'].iloc[0]:.2f}")
+        create_metric_card('Average Products Purchased per Minute', f"{df_avg_products['Average Products Per Minute'].iloc[0]:.2f}")
         plot_metric(col1, df_orders, 'PURCHASE DATE', 'QUANTITY', "Products Purchased per Minute", df_avg_products['Average Products Per Minute'].iloc[0])
 
     # Revenue per minute
@@ -198,6 +232,23 @@ def main():
     # Display other important metrics on the right
     with col_right:
         display_text_metrics(df_median_views, df_excess_sales)
+
+def main():
+    """
+    Função principal que organiza o fluxo do dashboard.
+    Define um controle de rádio no sidebar para navegação entre diferentes páginas do dashboard.
+    """
+    # Configuração do page layout
+    st.set_page_config(layout="wide")
+    
+    # Menu de navegação
+    menu = ["Dashboard", "Price Monitor"]
+    choice = st.sidebar.selectbox("Menu", menu)
+    
+    if choice == "Dashboard":
+        configure_dashboard_page()
+    elif choice == "Price Monitor":
+        price_monitor_page()
 
 if __name__ == "__main__":
     main()
