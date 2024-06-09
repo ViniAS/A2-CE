@@ -2,9 +2,9 @@
 Trabalho final da disciplina Computação Escalável na FGV EMAp, lecionada pelo professor Thiago Pinheiro de Araújo.
  
 ### Para rodar com WSL:
-Instale o `PySpark` no WSL com o comando `sudo pip3 install pyspark`.
+Instale o `PySpark` no WSL com o comando `pip install pyspark`.
 
-Você ainda tem que baixar o JAVA 22 [https://www.oracle.com/java/technologies/downloads/?er=221886][aqui]. E adicione o caminho do java nas variáveis de ambiente do Windows. Para fazer isso, vá em `Sistema > Configurações Avançadas do Sistema > Variáveis de Ambiente` e adicione o caminho do java na variável `Path`.
+Você ainda tem que baixar o JAVA com `sudo apt update` e depois `sudo apt install openjdk-11-jdk`.
 
 Para rodar o `q1.py` é necessário baixar o postgresql 16 [https://wikipedia.org][aqui] siga os passos do instalador e não se esqueça de instalar o pgAdmin4. Após a instalação, abra o pgAdmin4 e crie um banco de dados chamado `source_db` com um usuário `postgres` e senha `sua_senha`. O arquivo `example.sql` cria uma tabela `your_table_name` e insere alguns registros nela. O arquivo `q1.py` lê esses registros e filtra os dados e os insere em uma tabela `processed_table_name` no banco de dados `source_db`.
 
