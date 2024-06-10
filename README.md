@@ -6,7 +6,7 @@ Instale o `PySpark` no WSL com o comando `pip install pyspark`.
 
 Você ainda tem que baixar o JAVA com `sudo apt update` e depois `sudo apt install openjdk-11-jdk`.
 
-Para rodar o `q1.py` é necessário baixar o postgresql 16 [https://wikipedia.org][aqui] siga os passos do instalador e não se esqueça de instalar o pgAdmin4. Após a instalação, abra o pgAdmin4 e crie um banco de dados chamado `source_db` com um usuário `postgres` e senha `sua_senha`. O arquivo `example.sql` cria uma tabela `your_table_name` e insere alguns registros nela. O arquivo `q1.py` lê esses registros e filtra os dados e os insere em uma tabela `processed_table_name` no banco de dados `source_db`.
+Para rodar o `q1.py` é necessário baixar o postgresql 16 [aqui](https://www.postgresql.org/download/) siga os passos do instalador e não se esqueça de instalar o pgAdmin4. Após a instalação, abra o pgAdmin4 e crie um banco de dados chamado `source_db` com um usuário `postgres` e senha `sua_senha`. O arquivo `example.sql` cria uma tabela `your_table_name` e insere alguns registros nela. O arquivo `q1.py` lê esses registros e filtra os dados e os insere em uma tabela `processed_table_name` no banco de dados `source_db`.
 
 Antes de rodar o `q1.py` no WSL, faça o seguinte:
 - Verique dentro do arquivo `postgresql.conf` se o `listen_addresses` está configurado para `*`, geralmente esse que é localizado em `C:\Program Files\PostgreSQL\16\data`
