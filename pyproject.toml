@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "a2-ce"
+version = "0.1.0"
+description = ""
+authors = ["Vinícius Sousa <vinicius.antunes@proton.me>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyspark = "^3.5.1"
+celery = "^5.4.0"
+redis-collections = "^0.13.0"
+faker = "^25.8.0"
+names = "^0.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
