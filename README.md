@@ -6,8 +6,11 @@ Trabalho final da disciplina Computação Escalável na FGV EMAp, lecionada pelo
 
 Para rodar o dashboard, é necessário instalar a biblioteca `streamlit`:
 
+TODO: requirement.txt
 ```
 pip install streamlit
+pip install plotly
+pip install streamlit-aggrid
 ```
 
 e rodar o seguinte comando:

@@ -75,7 +75,7 @@ def fetch_data(store=None):
     In the future, this will be replaced by database queries.
     In the future, it will be necessary to read in parallel.
     """
-    # Simulating data reading
+    # Simulating data readin 
     df_orders = pd.read_csv('data/Products_Purchased_Per_Minute.csv')
     df_revenue = pd.read_csv('data/Revenue_Per_Minute.csv')
     df_users = pd.read_csv('data/Unique_User_Views_Per_Product_Per_Minute.csv')
