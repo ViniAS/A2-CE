@@ -112,9 +112,9 @@ def create_metric_card(title, value):
     Ensures that the value doesn't overflow the box.
     """
     st.markdown(f"""
-        <div style="background-color: #f4f1ff; border-radius: 10px; padding: 20px; text-align: center; height: 150px; margin-bottom: 20px;">
-            <h3 style="color: #5f4b8b; margin-bottom: 5px; font-size: 16px;">{title}</h3>
-            <h1 style="color: #c084fc; font-size: 30px; margin-top: 5px;">{value}</h1>
+        <div style="background-color: #5f4b8b; border-radius: 10px; padding: 20px; text-align: center; height: 150px; margin-bottom: 20px;">
+            <h3 style="color: white; margin-bottom: 5px; font-size: 16px;">{title}</h3>
+            <h1 style="color: white; font-size: 30px; margin-top: 5px;">{value}</h1>
         </div>
         """, unsafe_allow_html=True)
 
@@ -146,7 +146,7 @@ def display_ranking(df_ranking):
         enable_enterprise_modules=False,
         fit_columns_on_grid_load=True,
         height=400,
-        theme='material',  
+        theme='alpine',  
     )
 
 def display_text_metrics(df_median_views, df_excess_sales):
