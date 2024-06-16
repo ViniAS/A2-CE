@@ -1,0 +1,1 @@
+# Registro de comportamento txt (logs)
