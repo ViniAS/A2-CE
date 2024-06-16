@@ -95,17 +95,6 @@ def fetch_data(store=None):
     return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, df_stores
 
 
-def configure_page():
-    """
-    Configures the layout and title of the page.
-    """
-    st.set_page_config(
-        page_title='Sales and Views Metrics Dashboard',
-        layout='wide',
-        initial_sidebar_state='expanded'
-    )
-    st.title('Sales and Views Metrics Dashboard')
-
 def create_metric_card(title, value):
     """
     Creates a metric card with the title above and the value below using HTML for styling.
@@ -192,7 +181,38 @@ def configure_dashboard_page():
     """
     Configura e exibe a página do Dashboard.
     """
-    st.title('Sales and Views Metrics Dashboard')
+    col1, col2 = st.columns([4, 1])  
+
+    with col1:
+        st.title('Sales and Views Metrics Dashboard')
+    with col2:
+        st.markdown("""
+            <style>
+                div.stButton > button:first-child {
+                    font-size: 16px;
+                    height: 50px;  
+                    width: 100%;
+                    border-radius: 5px;
+                    border: 1px solid rgba(27, 31, 35, 0.15);
+                    margin-top: -5px;  
+                    background-color: #5f4b8b;  
+                    color: white;  
+                    transition: background-color 0.3s, box-shadow 0.3s;  
+                }
+                div.stButton > button:first-child:hover {
+                    background-color: #4b3a6b; 
+                    border: 1px solid rgba(27, 31, 35, 0.35);
+                    color: white;
+                }
+                div.stButton > button:first-child:active {
+                    background-color: #3a2d54;  
+                    box-shadow: 0 2px 5px -1px rgba(0, 0, 0, 0.2); 
+                    color: white;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+        if st.button('Refresh Data'):
+            st.experimental_rerun()
     
     # Load store data
     df_stores = pd.read_csv('data/Stores.csv')
