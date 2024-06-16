@@ -46,6 +46,7 @@ def answer_q2(df, df2):
         df = df.select(['minute', ' QUANTIDADE', ' PREÇO'])
         df = df.withColumn('revenue', df[' QUANTIDADE'] * df[' PREÇO'])
         df = df.groupBy('minute').agg(F.sum('revenue').alias('revenue_per_minute'))
+        df = df.sort('minute')
 
         df.show()
         print((df.count(), len(df.columns)))
