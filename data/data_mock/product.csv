@@ -1,4 +1,5 @@
 ID, NOME, IMAGEM, PREÇO, DESCRIÇÃO
+product_id,name,image,price,description
 2,Car,car.jpg,595,A car is a road vehicle with an engine, four wheels, and seats for a small number of people.
 5,Bike,bike.jpg,651,A bike is a vehicle with two wheels that you ride by sitting on its seat and pushing two pedals with your feet.
 3,Bike,bike.jpg,217,A bike is a vehicle with two wheels that you ride by sitting on its seat and pushing two pedals with your feet.

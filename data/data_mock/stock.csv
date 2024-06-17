@@ -1,4 +1,4 @@
-ID PRODUTO, QUANTIDADE EM ESTOQUE
+product_id,quantity_in_stock
 7,646
 3,194
 4,45
