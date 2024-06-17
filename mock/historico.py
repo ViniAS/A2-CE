@@ -1,0 +1,1 @@
+# Registros históricos (BD)
