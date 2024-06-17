@@ -1,5 +1,12 @@
+
+
 {
-    "db_url": "jdbc:postgresql://192.168.0.107:5432/source_db",
-    "db_user": "postgres",
-    "db_password": "huckleberry"
-  }
+    "db_source_url": "jdbc:postgresql://localhost:5432/source_db",
+    "db_source_user": "postgres",
+    "db_source_password": "senha",
+
+    "db_target_url": "jdbc:postgresql://localhost:5432/target_db",
+    "db_target_user": "postgres",
+    "db_target_password": "senha"
+}
+
