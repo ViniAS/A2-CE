@@ -1,0 +1,35 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: test
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+
+  rabbit:
+    image: rabbitmq:3-management
+    restart: always
+
+  celery:
+    build: .
+    command: celery -A main worker --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - rabbit
+
+  app:
+    build: .
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - rabbit
+      - celery
+    environment:
+      POSTGRES_PASSWORD: secret
