@@ -41,11 +41,12 @@ db_properties_source = {
 # df_product = spark.read.jdbc(url=url_source, table="product", properties=db_properties_source)
 # df_store = spark.read.jdbc(url=url_source, table="store", properties=db_properties_source)
 
-df = spark.read.csv('../data/data_mock/log_user_behavior.txt', header=True)
-df2 = spark.read.csv('../data/data_mock/product.csv', header=True)
-df3 = spark.read.csv('../data/data_mock/Stores.csv', header=True)
 
-def answer_q4(df, df2, df3, store_id=None):
+
+def answer_q4(store_id=None):
+    df = spark.read.csv('../data/data_mock/log_user_behavior.txt', header=True)
+    df2 = spark.read.csv('../data/data_mock/product.csv', header=True)
+    df3 = spark.read.csv('../data/data_mock/Stores.csv', header=True)
     try:
         # Filter only the 'click' actions
         df = df.filter(df['action'] == 'click')
@@ -88,5 +89,3 @@ def answer_q4(df, df2, df3, store_id=None):
         return df
     except Exception as e:
         print(f"Error: {e}")
-
-df = answer_q4(df, df2, df3)

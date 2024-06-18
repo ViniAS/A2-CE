@@ -30,10 +30,11 @@ db_properties = {
 # df = spark.read.jdbc(url=url, table="order", properties=db_properties)
 # df2 = spark.read.jdbc(url=url, table="stock", properties=db_properties)
 
-df = spark.read.csv('../data/data_mock/order.csv', header=True)
-df2 = spark.read.csv('../data/data_mock/stock.csv', header=True)
 
-def answer_q6(df, df2, store_id = None):
+def answer_q6(store_id = None):
+    df = spark.read.csv('../data/data_mock/order.csv', header=True)
+    df2 = spark.read.csv('../data/data_mock/stock.csv', header=True)
+
     try:
         # Rename columns in df2 for consistency
         df2 = df2.withColumnRenamed('product_id', 'ID PRODUTO')
@@ -60,6 +61,3 @@ def answer_q6(df, df2, store_id = None):
     except Exception as e:
         print(f"Error: {e}")
         return None
-
-
-df = answer_q6(df, df2)

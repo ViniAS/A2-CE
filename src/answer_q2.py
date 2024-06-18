@@ -32,23 +32,29 @@ db_properties = {
 # df = spark.read.jdbc(url=url, table="order", properties=db_properties)
 # df2 = spark.read.jdbc(url=url, table="product", properties=db_properties)
 
-df = spark.read.csv('../data/data_mock/order.csv', header=True)
-df2 = spark.read.csv('../data/data_mock/product.csv', header=True)
 
-def answer_q2(df, df2):
+def answer_q2(store_id=None, table=True):
+    df = spark.read.csv('../data/data_mock/order.csv', header=True)
+    df2 = spark.read.csv('../data/data_mock/product.csv', header=True)
     try:
         df = df.withColumnRenamed('product_id', 'p_id')
         df = df.join(df2, df['p_id'] == df2['product_id'])
         df = df.withColumn('quantity', df['quantity'].cast('int'))
         df = df.withColumn('price', df['price'].cast('float'))
         df = df.withColumn('purchase_date', F.to_timestamp('purchase_date'))
+        min_minute = df.agg({'purchase_date': 'min'}).collect()[0][0]
+        max_minute = df.agg({'purchase_date': 'max'}).collect()[0][0]
         df = df.withColumn('minute',F.date_format('purchase_date', 'yyyy-MM-dd HH:mm:00'))
         df = df.select(['minute', 'quantity', 'price'])
         df = df.withColumn('revenue', df['quantity'] * df['price'])
         df = df.groupBy('minute').agg(F.sum('revenue').alias('revenue_per_minute'))
         df = df.sort('minute')
+        if table:
+            return df
+        else:
+            df = df.withColumn('revenue_per_minute', F.col('revenue_per_minute')/(max_minute - min_minute).total_seconds()/60)
+            # sum all quantities
+            df = df.groupBy().agg(F.sum('revenue_per_minute').alias('revenue_per_minute'))
         return df
     except Exception as e:
         print(f"Error: {e}")
-
-df = answer_q2(df, df2)

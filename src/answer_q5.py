@@ -38,10 +38,11 @@ db_properties_source = {
 # df_order = spark.read.jdbc(url=url_source, table="order", properties=db_properties_source)
 
 
-df_behavior = spark.read.csv('../data/data_mock/log_user_behavior.txt', header=True)
-df_order = spark.read.csv('../data/data_mock/order.csv', header=True)
 
-def answer_q5(df, df2, store_id = None):
+
+def answer_q5(store_id = None):
+    df = spark.read.csv('../data/data_mock/log_user_behavior.txt', header=True)
+    df2 = spark.read.csv('../data/data_mock/order.csv', header=True)
     try:
         # Filter only the 'click' actions in df
         df = df.filter(df['action'] == 'click')
@@ -84,7 +85,3 @@ def answer_q5(df, df2, store_id = None):
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
-
-df = answer_q5(df_behavior,df_order)
-
-print(df)
