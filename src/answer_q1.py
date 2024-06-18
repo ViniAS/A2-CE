@@ -15,23 +15,23 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Load configuration from config.json
-with open('config.json') as f:
-    config = json.load(f)
+# with open('config.json') as f:
+#     config = json.load(f)
 
-# Path to the PostgreSQL JDBC driver
-jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
+# # Path to the PostgreSQL JDBC driver
+# jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
 
-url = config['db_source_url']
-db_properties = {
-    "user": config['db_source_user'],
-    "password": config['db_source_password'],
-    "driver": "org.postgresql.Driver"
-}
+# url = config['db_source_url']
+# db_properties = {
+#     "user": config['db_source_user'],
+#     "password": config['db_source_password'],
+#     "driver": "org.postgresql.Driver"
+# }
 
 # df = spark.read.jdbc(url=url, table="order", properties=db_properties)
 
 def answer_q1(store_id=None, table= True):
-    df = spark.read.csv('../data/data_mock/order.csv', header=True) # for local testing
+    df = spark.read.csv('data/data_mock/order.csv', header=True) # for local testing
     try:
         df = df.withColumn('purchase_date', F.to_timestamp('purchase_date'))
         min_minute = df.agg({'purchase_date': 'min'}).collect()[0][0]
