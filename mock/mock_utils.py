@@ -55,6 +55,10 @@ def order_data():
     user_id = fake.random_int(min=1+your_computer_id*1000, max=1000+your_computer_id*1000)
     product_id = fake.random_int(min=1+ your_computer_id*10, max=10+your_computer_id*10)
     quantity = fake.random_int(min=1, max=10)
+    shop = fake.random_int(min=1, max=50)
+    price = fake.random_int(min=1, max=100)
+    price *= 10
+    price *= quantity
 
     # get 4 random dates
     four_dates = [generate_random_date(2019, datetime.now().year) for _ in range(4)]
@@ -69,7 +73,8 @@ def order_data():
 
     return {"user_id": user_id, "product_id": product_id, "quantity": quantity, 
             "purchase_date": purchase_date, "payment_date": payment_date, 
-            "shipping_date": shipping_date, "delivery_date": delivery_date}
+            "shipping_date": shipping_date, "delivery_date": delivery_date,
+            "shop_id": shop, "price": price}
 
 # Log data generators
 # DataCat & CadêAnalytics:
