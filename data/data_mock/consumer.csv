@@ -1,4 +1,4 @@
-ID, NOME, SOBRENOME, ENDEREÇO, DATA DE NASCIMENTO, DATA DE CADASTRO
+user_id,name,surname,city,born_date,register_date
 607,Grace,Smith,Los Angeles,16/2/1971,17/10/2020
 746,David,White,Philadelphia,25/2/1950,26/4/2020
 832,Bob,Johnson,San Antonio,9/3/1990,13/10/2023

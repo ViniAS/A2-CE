@@ -37,20 +37,16 @@ df2 = spark.read.csv('../data/data_mock/product.csv', header=True)
 
 def answer_q2(df, df2):
     try:
-        df = df.join(df2, df['product_id'] == df2['ID'])
+        df = df.withColumnRenamed('product_id', 'p_id')
+        df = df.join(df2, df['p_id'] == df2['product_id'])
         df = df.withColumn('quantity', df['quantity'].cast('int'))
-        df = df.withColumn(' PREÇO', df[' PREÇO'].cast('float'))
+        df = df.withColumn('price', df['price'].cast('float'))
         df = df.withColumn('purchase_date', F.to_timestamp('purchase_date'))
-        df = df.withColumn('minute',F.concat(F.year('purchase_date'), F.lit('-'), F.month('purchase_date'), 
-                            F.lit('-'), F.dayofmonth('purchase_date'), F.lit(' '), F.hour('purchase_date'), 
-                            F.lit(':'), F.minute('purchase_date'), F.lit(':00')))
-        df = df.select(['minute', 'quantity', ' PREÇO'])
-        df = df.withColumn('revenue', df['quantity'] * df[' PREÇO'])
+        df = df.withColumn('minute',F.date_format('purchase_date', 'yyyy-MM-dd HH:mm:00'))
+        df = df.select(['minute', 'quantity', 'price'])
+        df = df.withColumn('revenue', df['quantity'] * df['price'])
         df = df.groupBy('minute').agg(F.sum('revenue').alias('revenue_per_minute'))
         df = df.sort('minute')
-
-        df.show()
-        print((df.count(), len(df.columns)))
         return df
     except Exception as e:
         print(f"Error: {e}")

@@ -37,9 +37,7 @@ def answer_q3(df):
     try:
         df = df.filter(df['action'] == 'click')
         df = df.withColumn('date', F.to_timestamp('date'))
-        df = df.withColumn('minute', F.concat(F.year('date'), F.lit('-'), F.month('date'), F.lit('-'), 
-                            F.dayofmonth('date'), F.lit(' '), F.hour('date'), F.lit(':'), F.minute('date'), 
-                            F.lit(':00')))
+        df = df.withColumn('minute', F.date_format('date', 'yyyy-MM-dd HH:mm:00'))
         
         df = df.select(['minute', 'button_product_id', 'user_author_id'])
         df = df.groupBy(['minute', 'button_product_id']).agg(F.countDistinct('user_author_id').alias('unique_users'))

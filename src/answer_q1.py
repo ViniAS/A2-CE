@@ -35,16 +35,11 @@ df = spark.read.csv('../data/data_mock/order.csv', header=True) # for local test
 def answer_q1(df):
     try:
         df = df.withColumn('purchase_date', F.to_timestamp('purchase_date'))
-        df = df.withColumn('minute', F.concat(F.year('purchase_date'), F.lit('-'), F.month('purchase_date'), 
-                            F.lit('-'), F.dayofmonth('purchase_date'), F.lit(' '), F.hour('purchase_date'), 
-                            F.lit(':'), F.minute('purchase_date'), F.lit(':00')))
+        df = df.withColumn('minute', F.date_format('purchase_date', 'yyyy-MM-dd HH:mm:00'))
         
         df = df.select(['minute', 'quantity'])
         df = df.groupBy('minute').agg(F.sum('quantity').alias('quantity'))
         df = df.sort('minute')
-
-        df.show()
-        print((df.count(), len(df.columns)))
         return df
     except Exception as e:
         print(f"Error: {e}")
