@@ -33,7 +33,7 @@ while True:
     time.sleep(1)
     # Random int between 1 and 10
     qtd = random.randint(50, 150)
-    order_data = [MOCK.order_data() for _ in range(qtd)]
+    order_data = [MOCK.order_data(get_new_date=False) for _ in range(qtd)]
     try:
         df = spark.createDataFrame(order_data)
         df.write.jdbc(url=url, table="order_data", mode="append", properties=properties)

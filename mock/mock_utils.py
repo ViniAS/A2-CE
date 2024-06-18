@@ -13,10 +13,11 @@ stock_dict = dict()
 your_computer_id = 0
 
 # Utils
-def generate_random_date(min_year=1900, max_year=datetime.now().year):
+def generate_random_date(min_year=2020, max_year=datetime.now().year):
     start = datetime(min_year, 1, 1, 0, 0, 0)
     years = max_year - min_year + 1
-    end = start + timedelta(days=365 * years)
+    some_days = datetime.now().month * 30 + datetime.now().day
+    end = start + timedelta(days=365 * years + some_days)
     return fake.date_time_between_dates(datetime_start=start, datetime_end=end)
 
 # CSV data generators
@@ -51,7 +52,7 @@ def stock_data(product_id = -1):
         quantity = stock_dict[product_id]
     return {"product_id": product_id, "quantity": quantity}
 
-def order_data():
+def order_data(get_new_date = True):
     user_id = fake.random_int(min=1+your_computer_id*1000, max=1000+your_computer_id*1000)
     product_id = fake.random_int(min=1+ your_computer_id*10, max=10+your_computer_id*10)
     quantity = fake.random_int(min=1, max=10)
@@ -60,16 +61,29 @@ def order_data():
     price *= 10
     price *= quantity
 
-    # get 4 random dates
-    four_dates = [generate_random_date(2019, datetime.now().year) for _ in range(4)]
+    if get_new_date:
+        # get 4 random dates
+        four_dates = [generate_random_date(2019, datetime.now().year) for _ in range(4)]
 
-    # sort the dates
-    four_dates.sort()
+        # sort the dates
+        four_dates.sort()
 
-    purchase_date = four_dates[0]
-    payment_date = four_dates[1]
-    shipping_date = four_dates[2]
-    delivery_date = four_dates[3]
+        purchase_date = four_dates[0]
+        payment_date = four_dates[1]
+        shipping_date = four_dates[2]
+        delivery_date = four_dates[3]
+    
+    else:
+        # Get current date
+        purchase_date = datetime.now()
+        days_to_pay = fake.random_int(min=1, max=10)
+        payment_date = purchase_date + timedelta(days=days_to_pay)
+        days_to_ship = fake.random_int(min=1, max=7)
+        shipping_date = payment_date + timedelta(days=days_to_ship)
+        days_to_deliver = fake.random_int(min=1, max=21)
+        delivery_date = shipping_date + timedelta(days=days_to_deliver)
+
+
 
     return {"user_id": user_id, "product_id": product_id, "quantity": quantity, 
             "purchase_date": purchase_date, "payment_date": payment_date, 
