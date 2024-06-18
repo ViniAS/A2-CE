@@ -27,7 +27,15 @@ db_pool = psycopg2.pool.SimpleConnectionPool(1, 20, **db_properties)
 
 
 @app.task
-def store_user_behavior(message):
+def store_user_behavior(message: str):
+    """ Takes the message from the webhook and stores it in the database
+
+    Args:
+        message (str): The message from the webhook, in JSON format
+    """
+    
+    message = json.loads(message)
+
     # Get a connection from the pool
     conn = db_pool.getconn()
 
@@ -37,9 +45,9 @@ def store_user_behavior(message):
 
         # Execute a query
         cur.execute(
-            "INSERT INTO log_user_behavior (user_author_id, action, button_product_id, stimulus, component, text_content) VALUES (%s, %s, %s, %s, %s, %s)",
-            (message['user_author_id'], message['action'], message['button_product_id'], message['stimulus'],
-             message['component'], message['text_content'])
+            "INSERT INTO webhook (shop_id, user_id, product_id, behavior, datetime) VALUES (%s, %s, %s, %s, %s)",
+            (message['shop_id'], message['user_id'], message['product_id'], message['behavior'],
+             message['datetime'])
         )
 
         # Commit the transaction
