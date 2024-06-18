@@ -16,18 +16,18 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Load configuration from config.json
-with open('config.json') as f:
-    config = json.load(f)
+# with open('config.json') as f:
+#     config = json.load(f)
 
 # Path to the PostgreSQL JDBC driver
-jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
+# jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
 
-url = config['db_target_url']
-db_properties = {
-    "user": config['db_target_user'],
-    "password": config['db_target_password'],
-    "driver": "org.postgresql.Driver"
-}
+# url = config['db_target_url']
+# db_properties = {
+#     "user": config['db_target_user'],
+#     "password": config['db_target_password'],
+#     "driver": "org.postgresql.Driver"
+# }
 
 # df = spark.read.jdbc(url=url, table="log_user_behavior", properties=db_properties)
 
@@ -35,7 +35,7 @@ db_properties = {
 
 def answer_q3(store_id=None, table= True):
     # if table is false: return only the number of unique users
-    df = spark.read.csv('../data/data_mock/log_user_behavior.txt', header=True)
+    df = spark.read.csv('data/data_mock/log_user_behavior.txt', header=True)
     try:
         df = df.filter(df['action'] == 'click')
         df = df.withColumn('date', F.to_timestamp('date'))

@@ -14,26 +14,26 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Load configuration from config.json
-with open('config.json') as f:
-    config = json.load(f)
+# with open('config.json') as f:
+#     config = json.load(f)
 
-# Path to the PostgreSQL JDBC driver
-jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
+# # Path to the PostgreSQL JDBC driver
+# jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
 
-url = config['db_source_url']
-db_properties = {
-    "user": config['db_source_user'],
-    "password": config['db_source_password'],
-    "driver": "org.postgresql.Driver"
-}
+# url = config['db_source_url']
+# db_properties = {
+#     "user": config['db_source_user'],
+#     "password": config['db_source_password'],
+#     "driver": "org.postgresql.Driver"
+# }
 
 # df = spark.read.jdbc(url=url, table="order", properties=db_properties)
 # df2 = spark.read.jdbc(url=url, table="stock", properties=db_properties)
 
 
 def answer_q6(store_id = None):
-    df = spark.read.csv('../data/data_mock/order.csv', header=True)
-    df2 = spark.read.csv('../data/data_mock/stock.csv', header=True)
+    df = spark.read.csv('data/data_mock/order.csv', header=True)
+    df2 = spark.read.csv('data/data_mock/stock.csv', header=True)
 
     try:
         # Rename columns in df2 for consistency

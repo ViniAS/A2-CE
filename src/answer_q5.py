@@ -14,25 +14,25 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Load configuration from config.json
-with open('config.json') as f:
-    config = json.load(f)
+# with open('config.json') as f:
+#     config = json.load(f)
 
 # Path to the PostgreSQL JDBC driver
-jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
+# jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
 
-url_target = config['db_target_url']
-db_properties_target = {
-    "user": config['db_target_user'],
-    "password": config['db_target_password'],
-    "driver": "org.postgresql.Driver"
-}
+# url_target = config['db_target_url']
+# db_properties_target = {
+#     "user": config['db_target_user'],
+#     "password": config['db_target_password'],
+#     "driver": "org.postgresql.Driver"
+# }
 
-url_source = config['db_source_url']
-db_properties_source = {
-    "user": config['db_source_user'],
-    "password": config['db_source_password'],
-    "driver": "org.postgresql.Driver"
-}
+# url_source = config['db_source_url']
+# db_properties_source = {
+#     "user": config['db_source_user'],
+#     "password": config['db_source_password'],
+#     "driver": "org.postgresql.Driver"
+# }
 
 # df_behavior = spark.read.jdbc(url=url_target, table="log_user_behavior", properties=db_properties_target)
 # df_order = spark.read.jdbc(url=url_source, table="order", properties=db_properties_source)
@@ -41,8 +41,8 @@ db_properties_source = {
 
 
 def answer_q5(store_id = None):
-    df = spark.read.csv('../data/data_mock/log_user_behavior.txt', header=True)
-    df2 = spark.read.csv('../data/data_mock/order.csv', header=True)
+    df = spark.read.csv('data/data_mock/log_user_behavior.txt', header=True)
+    df2 = spark.read.csv('data/data_mock/order.csv', header=True)
     try:
         # Filter only the 'click' actions in df
         df = df.filter(df['action'] == 'click')
@@ -72,11 +72,10 @@ def answer_q5(store_id = None):
 
         # Filter views that happened before the purchase
         joined_df = joined_df.filter(F.col('minute') < F.col('minute_purchase'))
-        joined_df.show()
         # Count the number of views before each purchase
         views_before_purchase = joined_df.groupBy('user_id', 'product_id', 
                                                   'minute_purchase').agg(F.count('*').alias('views_before_purchase'))
-        views_before_purchase.show()
+        
         # Calculate the median of views_before_purchase
         median_views_before_purchase = views_before_purchase.approxQuantile('views_before_purchase', [0.5], 0.01)[0]
 
