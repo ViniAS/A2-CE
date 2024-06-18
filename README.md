@@ -1,5 +1,29 @@
 # A2-CE
 Trabalho final da disciplina Computação Escalável na FGV EMAp, lecionada pelo professor Thiago Pinheiro de Araújo.
+
+
+## Dashboard
+
+Para rodar o dashboard, é necessário instalar a biblioteca `streamlit`:
+
+TODO: requirement.txt
+```
+pip install streamlit
+pip install plotly
+pip install streamlit-aggrid
+```
+
+e rodar o seguinte comando:
+
+```
+streamlit run dashboard.py
+```
+
+obs: 
+
+- O dashboard foi feito para rodar em dark mode, então se você estiver em light mode, o dashboard pode não ficar tão bonito.
+ 
+- Para modificar o tema para dark ou light, clique nos três pontos,depois em settings e escolhe o tema.
  
 ### Para rodar com WSL:
 Instale o `PySpark` no WSL com o comando `pip install pyspark`.

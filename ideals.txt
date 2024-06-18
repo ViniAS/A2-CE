@@ -1,0 +1,20 @@
+* Número de produtos comprados por minuto:
+    - Mostrar o número médio de produtos comprados por minuto.
+    - Gráfico de linha com a quantidade de produtos comprados por minuto.
+
+*  Valor faturado por minutos:
+    - Mostrar o valor médio faturado por minuto.
+    - Gráfico de linha com o valor faturado por minuto.
+
+* Número de usuários únicos visualizando cada produto por minuto.
+    - Mostrar o número médio de usuários únicos visualizando cada produto por minuto.
+    - Gráfico de linha com o número de usuários únicos visualizando cada produto por minuto.
+
+* Ranking de produtos mais visualizados na última hora.
+    - Caixa com o Ranking dos produtos mais visualizados na última hora.
+
+* Mediana do número de vezes que um usuário visualiza um produto antes de efetuar uma compra
+    - Mostrar a mediana do número de vezes que um usuário visualiza um produto antes de efetuar uma compra.
+
+* Número de produtos vendidos sem disponibilidade no estoque.
+    - Mostrar o número de produtos vendidos sem disponibilidade no estoque.

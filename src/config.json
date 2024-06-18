@@ -1,5 +1,5 @@
 {
     "db_url": "jdbc:postgresql://localhost:5432/source_db",
     "db_user": "postgres",
-    "db_password": "sua_senha"
+    "db_password": "password"
   }
