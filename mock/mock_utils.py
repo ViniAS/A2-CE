@@ -10,7 +10,11 @@ fake = Faker()
 stock_dict = dict()
 
 # controls the range of random numbers generated
-your_computer_id = 0
+max_user_id = 10_000
+user_id_set = set()
+
+max_product_id = 10_000
+product_id_set = set()
 
 # Utils
 def generate_random_date(min_year=2020, max_year=datetime.now().year):
@@ -20,6 +24,12 @@ def generate_random_date(min_year=2020, max_year=datetime.now().year):
     end = start + timedelta(days=365 * years + some_days)
     return fake.date_time_between_dates(datetime_start=start, datetime_end=end)
 
+def double_user_id():
+    max_user_id *= 2
+
+def double_product_id():
+    max_product_id *= 2
+
 # CSV data generators
 # All for Conta Verde:
 
@@ -28,35 +38,59 @@ def consumer_data():
     surname = names.get_last_name()
     city = fake.city()
 
-    user_id = fake.random_int(min = 1+ your_computer_id*1000, max = 1000+your_computer_id*1000)
+    user_id = fake.random_int(min = 1, max = max_user_id)
+    while user_id in user_id_set:
+        user_id = fake.random_int(min = 1, max = max_user_id)
+    user_id_set.add(user_id)
+    if len(user_id_set) >= max_user_id / 1.5:
+        double_user_id()
 
-    born_date = generate_random_date(1950, 1960 + your_computer_id*10)
-    register_date = generate_random_date(2019, 2021)
+    born_date = generate_random_date(1950, 2003)
+    register_date = generate_random_date(2019, 2023)
+
+    # CREATE TABLE consumer_data (user_id INT, name TEXT, surname TEXT, city TEXT, born_date TIMESTAMP, register_date TIMESTAMP);
     return {"user_id": user_id, "name": name, "surname": surname, 
             "city": city, "born_date": born_date, "register_date": register_date}
 
 def product_data():
-    product_id = fake.random_int(min = 1+your_computer_id*10, max = 10+your_computer_id*10)
+    product_id = fake.random_int(min = 1, max = max_product_id)
+    while product_id in product_id_set:
+        product_id = fake.random_int(min = 1, max = max_product_id)
+    product_id_set.add(product_id)
+    if len(product_id_set) >= max_product_id / 1.5:
+        double_product_id()
+
     name = fake.catch_phrase()
     image = f"{name.replace(' ', '_').lower()}.jpg"
     description = fake.sentence(nb_words=15)
     price = fake.random_int(min=100, max=1000)
 
-    return {"product_id": product_id, "name": name, "image": image, "price": price, "description": description}
+    # CREATE TABLE product_data (product_id INT, name TEXT, image TEXT, price INT, description TEXT, shop_id INT);
+    return {"product_id": product_id, "name": name, "image": image, "price": price, "description": description, "shop_id": fake.random_int(min=1, max=10)}
 
 def stock_data(product_id = -1):
+    if product_id == -1:
+        product_id = fake.random_int(min=1, max=max_product_id)
+        while product_id not in product_id_set:
+            product_id = fake.random_int(min=1, max=max_product_id)
     if product_id not in stock_dict:
         quantity = fake.random_int(min=1, max=1000)
         stock_dict[product_id] = quantity
     else:
         quantity = stock_dict[product_id]
-    return {"product_id": product_id, "quantity": quantity}
+    
+    # CREATE TABLE stock_data (product_id INT, quantity INT, shop_id INT);
+    return {"product_id": product_id, "quantity": quantity, "shop_id": fake.random_int(min=1, max=10)}
 
 def order_data(get_new_date = True):
-    user_id = fake.random_int(min=1+your_computer_id*1000, max=1000+your_computer_id*1000)
-    product_id = fake.random_int(min=1+ your_computer_id*10, max=10+your_computer_id*10)
+    user_id = fake.random_int(min=1, max=max_user_id)
+    while user_id not in user_id_set:
+        user_id = fake.random_int(min=1, max=max_user_id)
+    product_id = fake.random_int(min=1, max=max_product_id)
+    while product_id not in product_id_set:
+        product_id = fake.random_int(min=1, max=max_product_id)
     quantity = fake.random_int(min=1, max=10)
-    shop = fake.random_int(min=1, max=50)
+    shop = fake.random_int(min=1, max=10)
     price = fake.random_int(min=1, max=100)
     price *= 10
     price *= quantity
@@ -83,7 +117,7 @@ def order_data(get_new_date = True):
         days_to_deliver = fake.random_int(min=1, max=21)
         delivery_date = shipping_date + timedelta(days=days_to_deliver)
 
-
+    # CREATE TABLE order_data (user_id INT, product_id INT, quantity INT, purchase_date TIMESTAMP, payment_date TIMESTAMP, shipping_date TIMESTAMP, delivery_date TIMESTAMP, shop_id INT, price INT);
 
     return {"user_id": user_id, "product_id": product_id, "quantity": quantity, 
             "purchase_date": purchase_date, "payment_date": payment_date, 
@@ -99,7 +133,9 @@ def generateLogUserBehavior():
                "User scrolled through a table", "User dragged a form element"]
 
     action = random.choice(actions)
-    user_author_id = fake.random_int(min=1+your_computer_id*1000, max=1000+your_computer_id*1000)
+    user_author_id = fake.random_int(min=1, max=max_user_id)
+    while user_author_id not in user_id_set:
+        user_author_id = fake.random_int(min=1, max=max_user_id)
     stimulus = random.choice(stimuli)
     component = random.choice(components)
     text_content = fake.text(max_nb_chars=50)

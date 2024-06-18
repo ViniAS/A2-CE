@@ -29,12 +29,54 @@ properties = {
     "driver": "org.postgresql.Driver"
 }
 
-for _ in range(300_000):
+# order_data
+for _ in range(20_000):
     order_data = [MOCK.order_data(get_new_date=True) for _ in range(1000)]
     try:
         df = spark.createDataFrame(order_data)
         df.write.jdbc(url=url, table="order_data", mode="append", properties=properties)
     except Exception as e:
         print(f"Error: {e}")
-        spark.stop()
         break
+
+# consumer_data
+for _ in range(5_000):
+    consumer_data = [MOCK.consumer_data() for _ in range(1000)]
+    try:
+        df = spark.createDataFrame(consumer_data)
+        df.write.jdbc(url=url, table="consumer_data", mode="append", properties=properties)
+    except Exception as e:
+        print(f"Error: {e}")
+        break
+
+# stock_data
+for _ in range(5_000):
+    stock_data = [MOCK.stock_data() for _ in range(1000)]
+    try:
+        df = spark.createDataFrame(stock_data)
+        df.write.jdbc(url=url, table="stock_data", mode="append", properties=properties)
+    except Exception as e:
+        print(f"Error: {e}")
+        break
+
+# product_data
+for _ in range(5_000):
+    product_data = [MOCK.product_data() for _ in range(1000)]
+    try:
+        df = spark.createDataFrame(product_data)
+        df.write.jdbc(url=url, table="product_data", mode="append", properties=properties)
+    except Exception as e:
+        print(f"Error: {e}")
+        break
+
+for _ in range(10):
+    alphabet = "ABCDEFGHIJ"
+    shop_data = [[i, alphabet[i]*3] for i in range(1, 11)]
+    try:
+        df = spark.createDataFrame(shop_data)
+        df.write.jdbc(url=url, table="shop_data", mode="append", properties=properties)
+    except Exception as e:
+        print(f"Error: {e}")
+        break
+
+spark.stop()
