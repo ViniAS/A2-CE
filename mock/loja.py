@@ -4,7 +4,7 @@ from pyspark.sql import SparkSession
 import json
 import os
 import time
-import mock_utils as MOCK
+import mock_utils as _mock
 import random
 
 # Load configuration from config.json
@@ -27,6 +27,10 @@ properties = {
     "password": config['db_password'],
     "driver": "org.postgresql.Driver"
 }
+
+MOCK = _mock.MOCK()
+MOCK.curr_user_id = 1_000
+MOCK.curr_product_id = 1_000
 
 count_time = 0
 while True:
