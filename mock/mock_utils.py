@@ -35,6 +35,7 @@ class MOCK:
         born_date = generate_random_date(1950, 2003)
         register_date = generate_random_date(2019, 2023)
 
+        # CREATE TABLE consumer_data (user_id INT, name TEXT, surname TEXT, city TEXT, born_date TIMESTAMP, register_date TIMESTAMP);
         return {"user_id": user_id, "name": name, "surname": surname, 
                 "city": city, "born_date": born_date, "register_date": register_date}
     
@@ -59,6 +60,7 @@ class MOCK:
         else:
             quantity = self.stock_dict[product_id]
 
+        # CREATE TABLE stock_data (product_id INT, quantity INT, shop_id INT);
         return {"product_id": product_id, "quantity": quantity, "shop_id": fake.random_int(min=1, max=10)}
     
     def order_data(self, get_new_date = True):
@@ -73,7 +75,7 @@ class MOCK:
 
         if get_new_date:
             # get 4 random dates
-            four_dates = [generate_random_date(2019, datetime.now().year) for _ in range(4)]
+            four_dates = [generate_random_date() for _ in range(4)]
 
             # sort the dates
             four_dates.sort()
@@ -94,7 +96,6 @@ class MOCK:
             delivery_date = shipping_date + timedelta(days=days_to_deliver)
 
         # CREATE TABLE order_data (user_id INT, product_id INT, quantity INT, purchase_date TIMESTAMP, payment_date TIMESTAMP, shipping_date TIMESTAMP, delivery_date TIMESTAMP, shop_id INT, price INT);
-
         return {"user_id": user_id, "product_id": product_id, "quantity": quantity, 
                 "purchase_date": purchase_date, "payment_date": payment_date, 
                 "shipping_date": shipping_date, "delivery_date": delivery_date,
@@ -104,6 +105,8 @@ class MOCK:
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         shop_id = i + 1
         name = f"Shop {alphabet[i]}"
+
+        # CREATE TABLE shop_data (shop_id INT, shop_name TEXT);
         return {"shop_id": shop_id, "shop_name": name}
     
     def generateLogUserBehavior(self):
@@ -113,34 +116,36 @@ class MOCK:
                    "User scrolled through a table", "User dragged a form element"]
 
         action = random.choice(actions)
-        user_author_id = fake.random_int(min=1, max=self.max_user_id)
-        while user_author_id not in self.user_id_set:
-            user_author_id = fake.random_int(min=1, max=self.max_user_id)
+        user_author_id = fake.random_int(min=1, max=self.curr_user_id - 1)
         stimulus = random.choice(stimuli)
         component = random.choice(components)
         text_content = fake.text(max_nb_chars=50)
-        date = generate_random_date(2022, 2023)
+        date = generate_random_date()
         buttonProductId = fake.random_int(min=1, max=7) if action == "click" else 0
 
-        return {"user_author_id": user_author_id, "action": action, "button_product_id": buttonProductId,
-                "stimulus": stimulus, "component": component, "text_content": text_content, "date": date}
+        ret = [user_author_id, action, buttonProductId, stimulus, component, text_content, date]
+        ret = ','.join(map(str, ret)) + '\n'
+        # CREATE TABLE user_behavior_log (user_author_id INT, action TEXT, button_product_id INT, stimulus TEXT, component TEXT, text_content TEXT, date TIMESTAMP);
+        return ret
     
-    def generateLogAudit():
+    def generateLogAudit(self):
         actions = ["create", "read", "update", "delete"]
         actionOnSystem = ["User created a new account", "User read a document",
                           "User updated a document", "User deleted a document"]
         textContent = fake.text(max_nb_chars=50)
 
         action = random.choice(actions)
-        userAuthorId = fake.random_int(min=1, max=1000)
+        userAuthorId = fake.random_int(min=1, max=self.curr_user_id - 1)
         actionDescription = random.choice(actionOnSystem)
 
-        date = generate_random_date(2019, 2023)
+        date = generate_random_date()
 
-        return {"user_author_id": userAuthorId, "action": action, "action_description": actionDescription,
-                "text_content": textContent, "date": date}
+        # CREATE TABLE audit_log (user_author_id INT, action TEXT, action_description TEXT, text_content TEXT, date TIMESTAMP);
+        ret = [userAuthorId, action, actionDescription, textContent, date]
+        ret = ','.join(map(str, ret)) + '\n'
+        return ret
     
-    def generateLogFailureNotification():
+    def generateLogFailureNotification(self):
         components = ["database", "server", "client", "network"]
         severities = ["low", "medium", "high", "critical"]
         messages = ["Database connection failed", "Server timeout", "Client error", "Network failure"]
@@ -151,16 +156,22 @@ class MOCK:
         severity = random.choice(severities)
         message = messages[comp]
 
-        date = generate_random_date(2019, 2023)
+        date = generate_random_date()
 
-        return {"component": component, "severity": severity, "message": message, "text_content": textContent, "date": date}
+        ret = [component, severity, message, textContent, date]
+        ret = ','.join(map(str, ret)) + '\n'
+        # CREATE TABLE failure_notification_log (component TEXT, severity TEXT, message TEXT, text_content TEXT, date TIMESTAMP);
+        return ret
     
-    def generateLogDebug():
+    def generateLogDebug(self):
         messages = ["Debug message 1", "Debug message 2", "Debug message 3", "Debug message 4"]
         textContent = fake.text(max_nb_chars=50)
 
         message = random.choice(messages)
 
-        date = generate_random_date(2019, 2023)
+        date = generate_random_date()
 
-        return {"message": message, "text_content": textContent, "date": date}
+        ret = [message, textContent, date]
+        ret = ','.join(map(str, ret)) + '\n'
+        # CREATE TABLE debug_log (message TEXT, text_content TEXT, date TIMESTAMP);
+        return ret

@@ -10,33 +10,36 @@ import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 import json
 
+# Path to the PostgreSQL JDBC driver
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
+
 # Cria uma sessão Spark
-spark = SparkSession.builder \
-    .appName("Answer Q3") \
-    .getOrCreate()
+# spark = SparkSession.builder \
+#     .appName("Answer Q3") \
+#     .config("spark.jars", jdbc_driver_path) \
+#     .getOrCreate()
 
 # Load configuration from config.json
-# with open('config.json') as f:
-#     config = json.load(f)
+with open('src/config.json') as f:
+    config = json.load(f)
 
-# Path to the PostgreSQL JDBC driver
-# jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
-
-# url = config['db_target_url']
-# db_properties = {
-#     "user": config['db_target_user'],
-#     "password": config['db_target_password'],
-#     "driver": "org.postgresql.Driver"
-# }
-
-# df = spark.read.jdbc(url=url, table="log_user_behavior", properties=db_properties)
+url = config['db_target_url']
+db_properties = {
+    "user": config['db_target_user'],
+    "password": config['db_target_password'],
+    "driver": "org.postgresql.Driver"
+}
 
 
 
-def answer_q3(store_id=None, table= True):
+
+
+def answer_q3(spark, store_id=None, table= True):
     # if table is false: return only the number of unique users
-    df = spark.read.csv('data/data_mock/log_user_behavior.txt', header=True)
+    df = spark.read.jdbc(url=url, table="user_behavior_log", properties=db_properties)
     try:
+        if store_id:
+            df = df.filter(df['shop_id'] == store_id)
         df = df.filter(df['action'] == 'click')
         df = df.withColumn('date', F.to_timestamp('date'))
         #get min minute and max minute

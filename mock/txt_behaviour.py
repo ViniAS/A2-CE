@@ -4,8 +4,12 @@ from pyspark.sql import SparkSession
 import json
 import os
 import time
-import mock_utils as MOCK
+import mock_utils as _mock
 import random
+
+MOCK = _mock.MOCK()
+MOCK.curr_user_id = 1_000
+MOCK.curr_product_id = 1_000
 
 # Generate txt log data
 def generate_txt_log_data(log_type: str, quantity: int = 1000):
@@ -32,4 +36,4 @@ for type in type_list:
             random_num = random.randint(200, 1000)
             log_data = generate_txt_log_data(type, quantity=random_num)
             for log in log_data:
-                f.write(f"{log}\n")
+                f.write(f"{log}")

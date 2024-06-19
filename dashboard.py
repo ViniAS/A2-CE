@@ -13,7 +13,14 @@ from src.answer_q5 import answer_q5
 from src.answer_q6 import answer_q6
 
 # Inicia a sessão Spark
-spark = SparkSession.builder.appName("Dashboard").getOrCreate()
+# spark = SparkSession.builder.appName("Dashboard").getOrCreate()
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
+
+# Cria uma sessão Spark
+spark = SparkSession.builder \
+    .appName("Dash") \
+    .config("spark.jars", jdbc_driver_path) \
+    .getOrCreate()
 
 loading_times = {}
 
@@ -22,47 +29,51 @@ def fetch_data(store=None):
     Fetches necessary data for the dashboard using Spark.
     """
     global loading_times
-    loading_times.clear()
-
+    loading_times.clear()   
+    store = 1
     start_time = time.time()
-    df_orders = answer_q1(store, table=True)
+    df_orders = answer_q1(spark, store, table=True)
     loading_times['q1_table'] = time.time() - start_time
 
     start_time = time.time()
-    df_avg_products = answer_q1(store, table=False)
+    df_avg_products = answer_q1(spark, store, table=False)
     loading_times['q1_number'] = time.time() - start_time
     
     start_time = time.time()
-    df_revenue = answer_q2(store, table=True)
+    df_revenue = answer_q2(spark, store, table=True)
+    
     loading_times['q2_table'] = time.time() - start_time
 
     start_time = time.time()
-    df_avg_revenue = answer_q2(store, table=False)
+    df_avg_revenue = answer_q2(spark, store, table=False)
+    df_avg_revenue.show()
     loading_times['q2_number'] = time.time() - start_time
 
     start_time = time.time()
-    df_users = answer_q3(store, table=True)
+    df_users = answer_q3(spark, store, table=True)
     loading_times['q3_table'] = time.time() - start_time
 
     start_time = time.time()
-    df_avg_users = answer_q3(store, table=False)
+    df_avg_users = answer_q3(spark, store, table=False)
+    df_avg_users.show()
     loading_times['q3_number'] = time.time() - start_time
 
     start_time = time.time()
-    df_ranking = answer_q4(store)
+    df_ranking = answer_q4(spark, store)
     loading_times['q4'] = time.time() - start_time
 
     start_time = time.time()
-    df_median_views = answer_q5(store)
+    df_median_views = answer_q5(spark, store)
+    print(df_median_views)
     loading_times['q5'] = time.time() - start_time
 
     start_time = time.time()
-    df_excess_sales = answer_q6(store)
+    df_excess_sales = answer_q6(spark, store)
     loading_times['q6'] = time.time() - start_time
 
-    df_stores = spark.read.csv('data/data_mock/Stores.csv', header=True)
+    # df_stores = spark.read.csv('data/data_mock/Stores.csv', header=True)
 
-    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, df_stores
+    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, None
 
 def create_metric_card(title, value):
     """
@@ -209,14 +220,17 @@ def configure_dashboard_page():
         if st.button('Refresh Data'):
             st.experimental_rerun()
     
-    df_stores = spark.read.csv('data/data_mock/Stores.csv', header=True)
-    store_names = ["All"] + [row['store_name'] for row in df_stores.collect()]
+    # Access the shop_data table
+    df_stores = spark.read.jdbc(url="jdbc:postgresql://localhost:5432/source_db", table="shop_data", properties={"user": "postgres", "password": "senha", "driver": "org.postgresql.Driver"})
+    store_names = ["All"] + [row['shop_name'] for row in df_stores.collect()]
 
     col1, col2 = st.columns([1, 3])
     with col1:
         store = st.selectbox('Choose a store:', store_names)
         if store == "All":
             store = None
+        else:
+            store = df_stores[df_stores['shop_name'] == store].collect()[0]['shop_id']
 
     df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, _ = fetch_data(store)
     

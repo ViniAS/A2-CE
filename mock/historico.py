@@ -22,10 +22,10 @@ spark = SparkSession.builder \
      .getOrCreate()
 
 # Database connection properties
-url = config['db_url']
+url = config['db_source_url']
 properties = {
-    "user": config['db_user'],
-    "password": config['db_password'],
+    "user": config['db_source_user'],
+    "password": config['db_source_password'],
     "driver": "org.postgresql.Driver"
 }
 
