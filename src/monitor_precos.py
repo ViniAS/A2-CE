@@ -32,11 +32,13 @@ def monitor(spark, periodo_meses = 24, porcentagem_abaixo_media= 0):
 
     try:
         # Convert purchase_date to timestamp and create 'minute_purchase' column in df
-        df2 = df2.select(['product_id', 'product_name'])
+        df2 = df2.select(['product_id', 'name'])
         df = df.select(['product_id', 'price', 'purchase_date'])
         df = df.withColumn('purchase_date', F.to_timestamp('purchase_date'))
         df = df.withColumn('month', F.date_format('purchase_date', 'yyyy-MM'))
         df = df.withColumn('year', F.date_format('purchase_date', 'yyyy'))
+        # filter the last 24 months
+        df = df.filter(F.col('purchase_date') > F.add_months(F.current_date(), -periodo_meses))
         df = df.withColumn('price', df['price'].cast('float'))
         # df = df.groupBy('product_id', 'year', 'month').agg(F.mean('price').alias('mean_price'))
         # new column with the mean price of the product in all of extended period
