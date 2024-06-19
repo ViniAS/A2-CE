@@ -5,7 +5,8 @@ import my_settings as CONFIG
 
 
 class Message:
-    def __init__(self, user_author_id, button_product_id, stimulus, date, action, component, text_content):
+    def __init__(self, user_author_id, action, date,
+                               button_product_id, stimulus, component, text_content):
         self.user_author_id = user_author_id
         self.button_product_id = button_product_id
         self.stimulus = stimulus

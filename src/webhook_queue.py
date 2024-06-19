@@ -3,16 +3,17 @@ import psycopg2
 from psycopg2 import pool
 import json
 from pyspark.sql import SparkSession
-# Run with "celery -A mock_server worker --loglevel=INFO --concurrency=10"
+import datetime
+# Run with "celery -A webhook_queue worker --loglevel=INFO --concurrency=10"
 
 
 app = Celery('tasks', broker='pyamqp://guest@localhost//')
 
-with open('src/config.json') as f:
+with open('config.json') as f:
     config = json.load(f)
 
 # Path do driver JDBC do PostgreSQL
-jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
+jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
 
 # Propriedades de conexão com o banco de dados
 db_properties = {
@@ -35,6 +36,9 @@ def store_user_behavior(message: str):
     """
     
     message = json.loads(message)
+
+    # Convert date from timestamp to datetime
+    message['date'] = datetime.datetime.fromtimestamp(message['date'])
 
     # Get a connection from the pool
     conn = db_pool.getconn()

@@ -6,4 +6,4 @@ class Configuration:
     # UNIQUE_PROB = 0.5
     NUM_SHOPS = 50
     NUM_PRODUCTS = 1000
-    URL = "http://localhost:8000/webhook"
+    URL = "http://localhost:50505/webhook"
