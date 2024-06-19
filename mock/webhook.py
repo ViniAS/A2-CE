@@ -7,7 +7,6 @@ app = Flask(__name__)
 @app.route('/webhook', methods=['POST'])
 def webhook():
     if request.method == 'POST':
-        print(request.json)
         store_user_behavior.delay(request.data)
         return {'status': 'success'}, 200
     

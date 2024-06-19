@@ -8,19 +8,19 @@ from pyspark.sql import SparkSession
 
 app = Celery('tasks', broker='pyamqp://guest@localhost//')
 
-with open('config.json') as f:
+with open('src/config.json') as f:
     config = json.load(f)
 
 # Path do driver JDBC do PostgreSQL
-jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
 # Propriedades de conexão com o banco de dados
 db_properties = {
-    "user": config['db_user'],
-    "password": config['db_password'],
+    "user": config['db_target_user'],
+    "password": config['db_target_password'],
     "host": "localhost",
     "port": "5432",
-    "dbname": "source_db"
+    "dbname": "target_db"
 }
 
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 20, **db_properties)
@@ -45,9 +45,24 @@ def store_user_behavior(message: str):
 
         # Execute a query
         cur.execute(
-            "INSERT INTO webhook (shop_id, user_id, product_id, behavior, datetime) VALUES (%s, %s, %s, %s, %s)",
-            (message['shop_id'], message['user_id'], message['product_id'], message['behavior'],
-             message['datetime'])
+            """INSERT INTO user_behavior_log (
+                user_author_id, 
+                action, 
+                date, 
+                button_product_id, 
+                stimulus,
+                component,
+                text_content
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (
+                message['user_author_id'],
+                message['action'],
+                message['date'],
+                message['button_product_id'],
+                message['stimulus'],
+                message['component'],
+                message['text_content']
+            )
         )
 
         # Commit the transaction
