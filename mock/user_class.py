@@ -13,9 +13,10 @@ class User:
         self.id = id
         self.buy_prob = random.random()
 
-    def send_message(self, shop_id, product_id, behavior, timestamp):
-        info = message.Message(shop_id, self.id, product_id,
-                               behavior, timestamp)
+    def send_message(self, user_author_id, action, date,
+                     button_product_id, stimulus, component, text_content):
+        info = message.Message(user_author_id, action, date,
+                               button_product_id, stimulus, component, text_content)
         status_code, response_text = info.send()
 
         if int(status_code) != 200:
@@ -25,7 +26,9 @@ class User:
         shop_id = random.randint(1, settings.NUM_SHOPS + 1)
         product_id = random.randint(1, settings.NUM_PRODUCTS + 1)
         timestamp = datetime.datetime.now()
-        self.send_message(shop_id, product_id, "view", timestamp)
+        self.send_message(user_author_id, action, date,
+                          button_product_id, "view", component, text_content)
 
         if random.random() < self.buy_prob:
-            self.send_message(shop_id, product_id, "buy", timestamp)
+            self.send_message(user_author_id, action, date,
+                              button_product_id, "buy", component, text_content)
