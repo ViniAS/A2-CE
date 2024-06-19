@@ -29,11 +29,24 @@ type_list = ["behaviour", "behaviour", "behaviour",
              "behaviour", "behaviour", "behaviour",
              "audit", "fail", "debug"]
 
+type_count = {type: 0 for type in type_list}
+
 for type in type_list:
     os.makedirs(f"{data_path}/{type}", exist_ok=True)
     for i in range(N):
-        with open(f"{data_path}/{type}/log_{i}.txt", "w") as f:
+        with open(f"{data_path}/{type}/log_{type_count[type]}.txt", "w") as f:
+            type_count[type] += 1
             random_num = random.randint(200, 1000)
             log_data = generate_txt_log_data(type, quantity=random_num)
             for log in log_data:
                 f.write(f"{log}")
+
+while True:
+    time.sleep(1)
+    type = random.choice(type_list)
+    with open(f"{data_path}/{type}/log_{type_count[type]}.txt", "w") as f:
+        type_count[type] += 1
+        random_num = random.randint(200, 1000)
+        log_data = generate_txt_log_data(type, quantity=random_num)
+        for log in log_data:
+            f.write(f"{log}")
