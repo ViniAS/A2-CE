@@ -8,7 +8,7 @@ import mock_utils as _mock
 import random
 import pika
 
-# Load configuration from config.json
+#Load configuration from config.json
 with open("src/config.json") as f:
     config = json.load(f)
 
@@ -52,12 +52,15 @@ def generate_purchase(user_id, product_id, quantity, purchase_date, payment_date
     }
 
 def send_purchase(channel, loja, purchase):
-    channel.basic_publish(
-        exchange='',
-        routing_key=loja,
-        body=json.dumps(purchase)
-    )
-    print(f"Enviado: {purchase}")
+    try:
+        channel.basic_publish(
+            exchange='',
+            routing_key=loja,
+            body=json.dumps(purchase)
+        )
+        print(f"Enviado: {purchase}")
+    except pika.exceptions.AMQPError as e:
+        print(f"Failed to send message: {e}")
 
 lojas = ['compras_loja'+str(i) for i in range(1, 11)]
 connection, channel = connect_to_rabbitmq()
@@ -91,9 +94,9 @@ while True:
             delivery_date = delivery_date.timestamp()
             shop_id = order['shop_id']
             price = order['price']
-
+            
             purchase = generate_purchase(user_id, product_id, quantity, purchase_date, payment_date, shipping_date, delivery_date, shop_id, price)
-            send_purchase(channel, shop_id, purchase)
+            send_purchase(channel, str(shop_id), purchase) 
     except Exception as e:
         print(f"Error: {e}")
         connection.close()

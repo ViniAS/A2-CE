@@ -53,7 +53,7 @@ def process_order(channel, method, properties, body):
         print(f"Generate coupon for user {user_id} at store {store_id}")
         print("Orders used to generate the coupon:", compras_relevantes)
         # Register the coupon in the database
-        registrar_cupom(user_id, store_id, compras_relevantes)
+        #registrar_cupom(user_id, store_id, compras_relevantes)
         # Clear the user's orders
         store_purchases[store_id][user_id].clear()
 
