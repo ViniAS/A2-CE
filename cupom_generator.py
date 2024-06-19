@@ -9,8 +9,8 @@ import threading
 # Define the conditions for coupons
 # Example: [(total_value, time_interval_in_seconds)]
 CONDITIONS = [
-    (500, 1800 / 3),  # 500 monetary units in the last 30 minutes
-    (2000, 3600 * 6)  # 1000 monetary units in the last hour
+    (200_000, 600),  # 100k monetary units in the last 10 minutes
+    (400_000, 3600 * 6)  # 250k monetary units in the last 6 hours
 ]
 
 # Function to connect to RabbitMQ
@@ -34,10 +34,10 @@ def connect_to_postgresql():
 def process_order(channel, method, properties, body):
     order = json.loads(body)
     user_id = order['user_id']
-    value = order['price']  # Adjusted to the new message structure
+    value = order['price']  # Directly use price since it's already multiplied by quantity
     timestamp = order['purchase_date']
     store_id = order['shop_id']
-    print(f"Received: {order}")
+    #print(f"Received {order}")
     
     # Process the order here (example with deque for sliding window)
     if store_id not in store_purchases:
@@ -51,8 +51,10 @@ def process_order(channel, method, properties, body):
     # Check conditions
     if verificar_condicoes(store_id, user_id):
         compras_relevantes = listar_compras_relevantes(store_id, user_id)
+        #clean wsl console
         print(f"Generate coupon for user {user_id} at store {store_id}")
-        print("Orders used to generate the coupon:", compras_relevantes)
+        #sleep for 1 second
+        #print("Orders used to generate the coupon:", compras_relevantes)
         # Register the coupon in the database
         #registrar_cupom(user_id, store_id, compras_relevantes)
         # Clear the user's orders
@@ -65,7 +67,7 @@ def verificar_condicoes(store_id, user_id):
         total = 0
         for order in store_purchases[store_id][user_id]:
             if current_time - order['purchase_date'] <= interval:
-                total += order['price']  # Adjusted to the new message structure
+                total += order['price']  # Directly use price since it's already multiplied by quantity
         if total >= total_value:
             return True
     return False
@@ -81,31 +83,31 @@ def listar_compras_relevantes(store_id, user_id):
     return relevant_orders
 
 # Function to register the coupon generation in the PostgreSQL database
-# def registrar_cupom(user_id, store_id, compras_relevantes):
-#     connection = connect_to_postgresql()
-#     cursor = connection.cursor()
+def registrar_cupom(user_id, store_id, compras_relevantes):
+    connection = connect_to_postgresql()
+    cursor = connection.cursor()
     
-#     # Check if the user already has a row in the table
-#     cursor.execute(sql.SQL("SELECT * FROM cupons WHERE shop_id = %s AND user_id = %s"), (store_id, user_id))
-#     row = cursor.fetchone()
+    # Check if the user already has a row in the table
+    cursor.execute(sql.SQL("SELECT * FROM cupons WHERE shop_id = %s AND user_id = %s"), (store_id, user_id))
+    row = cursor.fetchone()
     
-#     if row:
-#         # If the row exists, increment the coupon count
-#         cursor.execute(sql.SQL("UPDATE cupons SET cupons = cupons + 1 WHERE shop_id = %s AND user_id = %s"), (store_id, user_id))
-#     else:
-#         # If the row does not exist, create a new row
-#         cursor.execute(sql.SQL("INSERT INTO cupons (shop_id, user_id, cupons) VALUES (%s, %s, 1)"), (store_id, user_id))
+    if row:
+        # If the row exists, increment the coupon count
+        cursor.execute(sql.SQL("UPDATE cupons SET cupons = cupons + 1 WHERE shop_id = %s AND user_id = %s"), (store_id, user_id))
+    else:
+        # If the row does not exist, create a new row
+        cursor.execute(sql.SQL("INSERT INTO cupons (shop_id, user_id, cupons) VALUES (%s, %s, 1)"), (store_id, user_id))
     
-#     connection.commit()
-#     cursor.close()
-#     connection.close()
+    connection.commit()
+    cursor.close()
+    connection.close()
 
 # Function to consume messages from a queue
 def consume_queue(loja):
     connection, channel = connect_to_rabbitmq()
     channel.queue_declare(queue=loja)
     channel.basic_consume(queue=loja, on_message_callback=process_order, auto_ack=True)
-    print(f' [*] Waiting for messages in {loja}. To exit press CTRL+C')
+    #print(f' [*] Waiting for messages in {loja}. To exit press CTRL+C')
     channel.start_consuming()
 
 # Main function
