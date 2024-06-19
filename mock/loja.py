@@ -6,6 +6,7 @@ import os
 import time
 import mock_utils as _mock
 import random
+import pika
 
 # Load configuration from config.json
 with open("src/config.json") as f:
@@ -28,6 +29,40 @@ properties = {
     "driver": "org.postgresql.Driver"
 }
 
+def connect_to_rabbitmq():
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    return connection, channel
+
+def declare_queues(channel, lojas):
+    for loja in lojas:
+        channel.queue_declare(queue=loja)
+
+def generate_purchase(user_id, product_id, quantity, purchase_date, payment_date, shipping_date, delivery_date, shop_id, price):
+    return {
+        'user_id': user_id,
+        'product_id': product_id,
+        'quantity': quantity,
+        'purchase_date': purchase_date,
+        'payment_date': payment_date,
+        'shipping_date': shipping_date,
+        'delivery_date': delivery_date,
+        'shop_id': shop_id,
+        'price': price
+    }
+
+def send_purchase(channel, loja, purchase):
+    channel.basic_publish(
+        exchange='',
+        routing_key=loja,
+        body=json.dumps(purchase)
+    )
+    print(f"Enviado: {purchase}")
+
+lojas = ['compras_loja'+str(i) for i in range(1, 11)]
+connection, channel = connect_to_rabbitmq()
+declare_queues(channel, lojas)
+
 MOCK = _mock.MOCK()
 MOCK.curr_user_id = 1_000
 MOCK.curr_product_id = 1_000
@@ -40,6 +75,23 @@ while True:
     # Random int between 1 and 10
     qtd = random.randint(50, 150)
     order_data = [MOCK.order_data(get_new_date=False) for _ in range(qtd)]
+    try:
+        for order in order_data:
+            user_id = order['user_id']
+            product_id = order['product_id']
+            quantity = order['quantity']
+            purchase_date = order['purchase_date']
+            payment_date = order['payment_date']
+            shipping_date = order['shipping_date']
+            delivery_date = order['delivery_date']
+            shop_id = order['shop_id']
+            price = order['price']
+
+            purchase = generate_purchase(user_id, product_id, quantity, purchase_date, payment_date, shipping_date, delivery_date, shop_id, price)
+            send_purchase(channel, shop_id, purchase)
+    except Exception as e:
+        print(f"Error: {e}")
+        connection.close()
     try:
         df = spark.createDataFrame(order_data)
         df.write.jdbc(url=url, table="order_data", mode="append", properties=properties)
