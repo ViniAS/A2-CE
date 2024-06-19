@@ -81,9 +81,14 @@ while True:
             product_id = order['product_id']
             quantity = order['quantity']
             purchase_date = order['purchase_date']
+            # Convert datetime to timestamp
+            purchase_date = purchase_date.timestamp()
             payment_date = order['payment_date']
+            payment_date = payment_date.timestamp()
             shipping_date = order['shipping_date']
+            shipping_date = shipping_date.timestamp()
             delivery_date = order['delivery_date']
+            delivery_date = delivery_date.timestamp()
             shop_id = order['shop_id']
             price = order['price']
 
