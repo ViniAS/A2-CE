@@ -2,8 +2,9 @@ import pika
 import json
 import time
 from collections import deque
-#import psycopg2
-#from psycopg2 import sql
+# import psycopg2
+# from psycopg2 import sql
+import threading
 
 # Define the conditions for coupons
 # Example: [(total_value, time_interval_in_seconds)]
@@ -19,22 +20,22 @@ def connect_to_rabbitmq():
     return connection, channel
 
 # Function to connect to PostgreSQL
-# def connect_to_postgresql():
-#     connection = psycopg2.connect(
-#         dbname="your_db_name",
-#         user="your_db_user",
-#         password="your_db_password",
-#         host="your_db_host",
-#         port="your_db_port"
-#     )
-#     return connection
+def connect_to_postgresql():
+    connection = psycopg2.connect(
+        dbname="your_db_name",
+        user="your_db_user",
+        password="your_db_password",
+        host="your_db_host",
+        port="your_db_port"
+    )
+    return connection
 
 # Function to process the order message
 def process_order(channel, method, properties, body):
     order = json.loads(body)
     user_id = order['user_id']
     value = order['price']  # Adjusted to the new message structure
-    timestamp = order['purchase_date']  # Adjusted to the new message structure
+    timestamp = order['purchase_date']
     store_id = order['shop_id']
     print(f"Received: {order}")
     
@@ -99,20 +100,29 @@ def listar_compras_relevantes(store_id, user_id):
 #     cursor.close()
 #     connection.close()
 
+# Function to consume messages from a queue
+def consume_queue(loja):
+    connection, channel = connect_to_rabbitmq()
+    channel.queue_declare(queue=loja)
+    channel.basic_consume(queue=loja, on_message_callback=process_order, auto_ack=True)
+    print(f' [*] Waiting for messages in {loja}. To exit press CTRL+C')
+    channel.start_consuming()
+
 # Main function
 def main():
     global store_purchases
     store_purchases = {}
 
-    connection, channel = connect_to_rabbitmq()
     queues = ['compras_loja1', 'compras_loja2', 'compras_loja3', 'compras_loja4', 'compras_loja5', 'compras_loja6', 'compras_loja7', 'compras_loja8', 'compras_loja9', 'compras_loja10']
 
+    threads = []
     for loja in queues:
-        channel.queue_declare(queue=loja)
-        channel.basic_consume(queue=loja, on_message_callback=process_order, auto_ack=True, exclusive=True)
+        thread = threading.Thread(target=consume_queue, args=(loja,))
+        thread.start()
+        threads.append(thread)
 
-    print(' [*] Waiting for messages. To exit press CTRL+C')
-    channel.start_consuming()
+    for thread in threads:
+        thread.join()
 
 if __name__ == '__main__':
     main()

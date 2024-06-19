@@ -96,7 +96,6 @@ while True:
             price = order['price']
             
             purchase = generate_purchase(user_id, product_id, quantity, purchase_date, payment_date, shipping_date, delivery_date, shop_id, price)
-            print(shop_id)
             send_purchase(channel, "compras_loja"+str(shop_id), purchase) 
     except Exception as e:
         print(f"Error: {e}")
