@@ -23,23 +23,30 @@ jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 with open('src/config.json') as f:
     config = json.load(f)
 
-url = config['db_target_url']
-db_properties = {
+url_target = config['db_target_url']
+db_properties_target = {
     "user": config['db_target_user'],
     "password": config['db_target_password'],
     "driver": "org.postgresql.Driver"
 }
 
-
-
+url_source = config['db_source_url']
+db_properties_source = {
+    "user": config['db_source_user'],
+    "password": config['db_source_password'],
+    "driver": "org.postgresql.Driver"
+}
 
 
 def answer_q3(spark, store_id=None, table= True):
     # if table is false: return only the number of unique users
-    df = spark.read.jdbc(url=url, table="user_behavior_log", properties=db_properties)
+    df = spark.read.jdbc(url=url_target, table="user_behavior_log", properties=db_properties_target)
+    df2 = spark.read.jdbc(url=url_source, table="product_data", properties=db_properties_source)
     try:
         if store_id:
+            df = df.join(df2, df['button_product_id'] == df2['product_id'])
             df = df.filter(df['shop_id'] == store_id)
+            
         df = df.filter(df['action'] == 'click')
         df = df.withColumn('date', F.to_timestamp('date'))
         #get min minute and max minute

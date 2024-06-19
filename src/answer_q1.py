@@ -32,6 +32,8 @@ db_properties = {
 def answer_q1(spark, store_id=None, table= True):
     df = spark.read.jdbc(url=url, table="order_data", properties=db_properties)
     try:
+        if store_id:
+            df = df.filter(df['shop_id'] == store_id)
         df = df.withColumn('purchase_date', F.to_timestamp('purchase_date'))
         min_minute = df.agg({'purchase_date': 'min'}).collect()[0][0]
         max_minute = df.agg({'purchase_date': 'max'}).collect()[0][0]

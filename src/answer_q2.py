@@ -37,6 +37,7 @@ def answer_q2(spark, store_id=None, table=True):
     try:
         if store_id:
             df = df.filter(F.col('shop_id') == store_id)
+            df2 = df2.filter(F.col('shop_id') == store_id)
         df = df.withColumnRenamed('product_id', 'p_id')
         df = df.withColumnRenamed('price', 'p_price')
         df = df.join(df2, df['p_id'] == df2['product_id'])

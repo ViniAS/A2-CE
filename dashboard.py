@@ -30,7 +30,6 @@ def fetch_data(store=None):
     """
     global loading_times
     loading_times.clear()   
-    store = 1
     start_time = time.time()
     df_orders = answer_q1(spark, store, table=True)
     loading_times['q1_table'] = time.time() - start_time
@@ -46,7 +45,6 @@ def fetch_data(store=None):
 
     start_time = time.time()
     df_avg_revenue = answer_q2(spark, store, table=False)
-    df_avg_revenue.show()
     loading_times['q2_number'] = time.time() - start_time
 
     start_time = time.time()
@@ -55,16 +53,15 @@ def fetch_data(store=None):
 
     start_time = time.time()
     df_avg_users = answer_q3(spark, store, table=False)
-    df_avg_users.show()
     loading_times['q3_number'] = time.time() - start_time
 
     start_time = time.time()
     df_ranking = answer_q4(spark, store)
+    df_ranking.show()
     loading_times['q4'] = time.time() - start_time
 
     start_time = time.time()
     df_median_views = answer_q5(spark, store)
-    print(df_median_views)
     loading_times['q5'] = time.time() - start_time
 
     start_time = time.time()

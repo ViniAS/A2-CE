@@ -121,7 +121,7 @@ class MOCK:
         component = random.choice(components)
         text_content = fake.text(max_nb_chars=50)
         date = generate_random_date()
-        buttonProductId = fake.random_int(min=1, max=7) if action == "click" else 0
+        buttonProductId = fake.random_int(min=1, max=self.curr_product_id-1) if action == "click" else 0
 
         ret = [user_author_id, action, buttonProductId, stimulus, component, text_content, date]
         ret = ','.join(map(str, ret)) + '\n'

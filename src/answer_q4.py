@@ -49,7 +49,8 @@ def answer_q4(spark, store_id=None):
         # Filter only the 'click' actions
         df = df.filter(df['action'] == 'click')
         if store_id:
-            df = df.filter(df['shop_id'] == store_id)
+            df2 = df2.filter(df2['shop_id'] == store_id)
+            df3 = df3.filter(df3['shop_id'] == store_id)
 
 
         # Convert date to timestamp and create 'minute' column
@@ -64,26 +65,30 @@ def answer_q4(spark, store_id=None):
 
         #select df2 colums
         df2 = df2.select(['product_id', 'name', 'shop_id'])
-        df2 = df2.withColumnRenamed('shop_id', 'shop_id_')
         # Group by 'button_product_id' and count views
         df = df.groupBy('button_product_id').agg(F.count('button_product_id').alias('view_count'))
         # Sort by 'view_count' in descending order and limit to top 5
         df = df.sort(F.desc('view_count')).limit(10)
 
         # Join with df2 to get product details including store_id
-        df = df.join(df2, df['button_product_id'] == df2['product_id'], how='left')
+        df2 = df2.join(df, df2['product_id'] == df['button_product_id'], how='inner')
         # only with store_id
         
         #rename store id df3
         df3 = df3.withColumnRenamed('shop_id', 'shop id')
         # Join with df3 to get store names
-        df = df.join(df3, df['shop_id_'] == df3['shop id'], how='left')
+        df2 = df2.join(df3, df2['shop_id'] == df3['shop id'], how='inner')
         # Select relevant columns
-        df = df.select(df['button_product_id'].alias('PRODUCT ID'), 
+        df2 = df2.select(df['button_product_id'].alias('PRODUCT ID'), 
                        df['view_count'].alias('VIEW COUNT'),
                        df2['name'].alias('PRODUCT NAME'),
-                       df['shop_id_'].alias('STORE ID'),
+                       df2['shop_id'].alias('STORE ID'),
                        df3['shop_name'].alias('STORE NAME'))
-        return df
+        
+        df2.sort('VIEW COUNT', ascending=False)
+        return df2
     except Exception as e:
         print(f"Error: {e}")
+
+if __name__ == "__main__":
+    answer_q4(spark, store_id=1).show()
