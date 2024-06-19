@@ -33,9 +33,9 @@ def connect_to_rabbitmq():
 def process_order(channel, method, properties, body):
     order = json.loads(body)
     user_id = order['user_id']
-    value = order['total_amount']  # Adjusted to the new message structure
-    timestamp = order['timestamp']
-    store_id = order['store_id']
+    value = order['price']  # Adjusted to the new message structure
+    timestamp = order['purchase_date']  # Adjusted to the new message structure
+    store_id = order['shop_id']
     print(f"Received: {order}")
     
     # Process the order here (example with deque for sliding window)
@@ -63,8 +63,8 @@ def verificar_condicoes(store_id, user_id):
     for total_value, interval in CONDITIONS:
         total = 0
         for order in store_purchases[store_id][user_id]:
-            if current_time - order['timestamp'] <= interval:
-                total += order['total_amount']  # Adjusted to the new message structure
+            if current_time - order['purchase_date'] <= interval:
+                total += order['price']  # Adjusted to the new message structure
         if total >= total_value:
             return True
     return False
@@ -75,7 +75,7 @@ def listar_compras_relevantes(store_id, user_id):
     relevant_orders = []
     for total_value, interval in CONDITIONS:
         for order in store_purchases[store_id][user_id]:
-            if current_time - order['timestamp'] <= interval:
+            if current_time - order['purchase_date'] <= interval:
                 relevant_orders.append(order)
     return relevant_orders
 
@@ -105,7 +105,7 @@ def main():
     store_purchases = {}
 
     connection, channel = connect_to_rabbitmq()
-    queues = ['compras_loja1', 'compras_loja2', 'compras_loja3', 'compras_loja4']
+    queues = ['compras_loja1', 'compras_loja2', 'compras_loja3', 'compras_loja4', 'compras_loja5', 'compras_loja6', 'compras_loja7', 'compras_loja8', 'compras_loja9', 'compras_loja10']
 
     for loja in queues:
         channel.queue_declare(queue=loja)
