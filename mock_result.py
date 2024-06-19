@@ -146,7 +146,6 @@ df_events = pd.DataFrame({
 })
 
 
-
 # Gerando dados de vendas e estoque
 sold_product_ids = np.random.randint(1, 101, size=500)  # 500 vendas
 sold_quantities = np.random.randint(1, 10, size=500)  # Quantidades vendidas
