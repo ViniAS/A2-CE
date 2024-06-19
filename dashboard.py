@@ -71,7 +71,7 @@ def fetch_data(store=None):
 
     # df_stores = spark.read.csv('data/data_mock/Stores.csv', header=True)
 
-    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, None
+    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales
 
 def create_metric_card(title, value):
     """
@@ -162,13 +162,14 @@ def display_loading_times():
         theme='alpine',  
     )
 
-def display_price_monitor(prices):
+
+def display_prices_table(prices):
     """
-    Displays the products found by the price monitor with enhanced styling.
+    Displays the prices table using AgGrid for better interactivity.
     """
-    st.header('Products Found by the Price Monitor')
-    
-    prices_df = prices.toPandas()  # Convert to Pandas DataFrame for display
+    st.header("Product Prices")
+
+    prices_df = prices.toPandas()
     gb = GridOptionsBuilder.from_dataframe(prices_df)
     gb.configure_pagination(paginationAutoPageSize=True)  # Adds pagination
     gb.configure_grid_options(domLayout='normal')
@@ -180,8 +181,8 @@ def display_price_monitor(prices):
         enable_enterprise_modules=False,
         fit_columns_on_grid_load=True,
         height=400,
-        theme='alpine',  
-    ) 
+        theme='alpine',
+    )
 
 def price_monitor_page():
     """
@@ -200,8 +201,7 @@ def price_monitor_page():
     
     if st.button('Buscar produtos'):
         prices = monitor(spark, months_to_consider, percentage_discount)
-        prices.show()
-        display_price_monitor(prices)
+        display_prices_table(prices)
 
         
 
@@ -254,7 +254,7 @@ def configure_dashboard_page():
         else:
             store = df_stores[df_stores['shop_name'] == store].collect()[0]['shop_id']
 
-    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, _ = fetch_data(store)
+    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales = fetch_data(store)
     
     col1, col2, col3 = st.columns(3)
     

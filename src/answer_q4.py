@@ -19,10 +19,7 @@ with open('src/config.json') as f:
 jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
 # # Cria uma sessão Spark
-spark = SparkSession.builder \
-    .appName("Answer Q4") \
-    .config("spark.jars", jdbc_driver_path) \
-    .getOrCreate()
+
 
 url_target = config['db_target_url']
 db_properties_target = {
@@ -52,7 +49,7 @@ def answer_q4(spark, store_id=None):
             df2 = df2.filter(df2['shop_id'] == store_id)
             df3 = df3.filter(df3['shop_id'] == store_id)
 
-
+        df.show()
         # Convert date to timestamp and create 'minute' column
         df = df.withColumn('date', F.to_timestamp('date'))
         df = df.withColumn('minute', F.date_format('date', 'yyyy-MM-dd HH:mm:00'))
@@ -62,11 +59,13 @@ def answer_q4(spark, store_id=None):
 
         # Filter records to include only the last hour
         df = df.filter(F.hour('date') == this_hour)
+        df.show()
 
         #select df2 colums
         df2 = df2.select(['product_id', 'name', 'shop_id'])
         # Group by 'button_product_id' and count views
         df = df.groupBy('button_product_id').agg(F.count('button_product_id').alias('view_count'))
+        df.show()
         # Sort by 'view_count' in descending order and limit to top 5
         df = df.sort(F.desc('view_count')).limit(10)
 
@@ -86,9 +85,7 @@ def answer_q4(spark, store_id=None):
                        df3['shop_name'].alias('STORE NAME'))
         
         df2.sort('VIEW COUNT', ascending=False)
+        df2.show()
         return df2
     except Exception as e:
         print(f"Error: {e}")
-
-if __name__ == "__main__":
-    answer_q4(spark, store_id=1).show()
