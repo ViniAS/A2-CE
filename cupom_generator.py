@@ -2,118 +2,116 @@ import pika
 import json
 import time
 from collections import deque
+#import psycopg2
+#from psycopg2 import sql
 
-# Definir as condições para os cupons
-# Exemplo: [(total_value, time_interval_in_seconds)]
+# Define the conditions for coupons
+# Example: [(total_value, time_interval_in_seconds)]
 CONDITIONS = [
-    (500, 1800/3),  # 500 unidades monetárias nos últimos 30 minutos
-    (2000, 3600*6)  # 1000 unidades monetárias na última hora
+    (500, 1800 / 3),  # 500 monetary units in the last 30 minutes
+    (2000, 3600 * 6)  # 1000 monetary units in the last hour
 ]
 
-# Função para conectar ao RabbitMQ
+# Function to connect to RabbitMQ
 def connect_to_rabbitmq():
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
     return connection, channel
 
-# Função para processar a mensagem de compra
-def process_purchase(channel, method, properties, body):
-    purchase = json.loads(body)
-    user_id = purchase['user_id']
-    value = purchase['value']
-    timestamp = purchase['timestamp']
-    store_id = purchase['store_id']
-    print(f"Recebido: {purchase}")
+# Function to connect to PostgreSQL
+# def connect_to_postgresql():
+#     connection = psycopg2.connect(
+#         dbname="your_db_name",
+#         user="your_db_user",
+#         password="your_db_password",
+#         host="your_db_host",
+#         port="your_db_port"
+#     )
+#     return connection
+
+# Function to process the order message
+def process_order(channel, method, properties, body):
+    order = json.loads(body)
+    user_id = order['user_id']
+    value = order['total_amount']  # Adjusted to the new message structure
+    timestamp = order['timestamp']
+    store_id = order['store_id']
+    print(f"Received: {order}")
     
-    # Processar a compra aqui (exemplo com deque para janela deslizante)
+    # Process the order here (example with deque for sliding window)
     if store_id not in store_purchases:
         store_purchases[store_id] = {}
     if user_id not in store_purchases[store_id]:
         store_purchases[store_id][user_id] = deque()
 
-    # Adicionar compra ao deque
-    store_purchases[store_id][user_id].append(purchase)
+    # Add order to the deque
+    store_purchases[store_id][user_id].append(order)
     
-    # Verificar condições
+    # Check conditions
     if verificar_condicoes(store_id, user_id):
         compras_relevantes = listar_compras_relevantes(store_id, user_id)
-        print(f"Gerar cupom para usuário {user_id} na loja {store_id}")
-        print("Compras utilizadas para gerar o cupom:", compras_relevantes)
-        # Informar o produtor sobre a geração do cupom
-        informar_produtor(user_id, store_id)
-        # Registrar no log
+        print(f"Generate coupon for user {user_id} at store {store_id}")
+        print("Orders used to generate the coupon:", compras_relevantes)
+        # Register the coupon in the database
         registrar_cupom(user_id, store_id, compras_relevantes)
-        # Limpar compras do usuário
+        # Clear the user's orders
         store_purchases[store_id][user_id].clear()
 
-# Função para verificar as condições dos cupons
+# Function to check the conditions for coupons
 def verificar_condicoes(store_id, user_id):
     current_time = int(time.time())
     for total_value, interval in CONDITIONS:
         total = 0
-        print(f"Verificando condição: valor total {total_value}, intervalo {interval} segundos")
-        for purchase in store_purchases[store_id][user_id]:
-            if purchase['timestamp'] >= current_time - interval:
-                total += purchase['value']
-        print(f"Total acumulado: {total} (necessário: {total_value})")
-        # Se alguma condição não for atendida, retornar False
-        if total < total_value:
-            return False
-    # Todas as condições foram atendidas
-    return True
+        for order in store_purchases[store_id][user_id]:
+            if current_time - order['timestamp'] <= interval:
+                total += order['total_amount']  # Adjusted to the new message structure
+        if total >= total_value:
+            return True
+    return False
 
-# Função para listar as compras relevantes que atenderam as condições
+# Function to list relevant orders for coupon generation
 def listar_compras_relevantes(store_id, user_id):
     current_time = int(time.time())
-    compras_relevantes = []
-    for purchase in store_purchases[store_id][user_id]:
-        for total_value, interval in CONDITIONS:
-            if purchase['timestamp'] >= current_time - interval:
-                compras_relevantes.append(purchase)
-    return compras_relevantes
+    relevant_orders = []
+    for total_value, interval in CONDITIONS:
+        for order in store_purchases[store_id][user_id]:
+            if current_time - order['timestamp'] <= interval:
+                relevant_orders.append(order)
+    return relevant_orders
 
-def informar_produtor(user_id, store_id):
-    # Função para notificar o produtor que um cupom foi gerado
-    # Enviar uma mensagem para uma fila específica para o produtor
-    connection, channel = connect_to_rabbitmq()
-    mensagem = {
-        'user_id': user_id,
-        'store_id': store_id,
-        'discount': 10  # 10% de desconto
-    }
-    channel.queue_declare(queue='cupons_gerados')
-    channel.basic_publish(
-        exchange='',
-        routing_key='cupons_gerados',
-        body=json.dumps(mensagem)
-    )
-    print(f"Notificação enviada ao produtor: {mensagem}")
-    connection.close()
+# Function to register the coupon generation in the PostgreSQL database
+# def registrar_cupom(user_id, store_id, compras_relevantes):
+#     connection = connect_to_postgresql()
+#     cursor = connection.cursor()
+    
+#     # Check if the user already has a row in the table
+#     cursor.execute(sql.SQL("SELECT * FROM cupons WHERE shop_id = %s AND user_id = %s"), (store_id, user_id))
+#     row = cursor.fetchone()
+    
+#     if row:
+#         # If the row exists, increment the coupon count
+#         cursor.execute(sql.SQL("UPDATE cupons SET cupons = cupons + 1 WHERE shop_id = %s AND user_id = %s"), (store_id, user_id))
+#     else:
+#         # If the row does not exist, create a new row
+#         cursor.execute(sql.SQL("INSERT INTO cupons (shop_id, user_id, cupons) VALUES (%s, %s, 1)"), (store_id, user_id))
+    
+#     connection.commit()
+#     cursor.close()
+#     connection.close()
 
-def registrar_cupom(user_id, store_id, compras_relevantes):
-    # Registrar no log o cupom gerado e as compras utilizadas
-    mensagem_log = {
-        'user_id': user_id,
-        'store_id': store_id,
-        'compras_utilizadas': compras_relevantes
-    }
-    with open('cupons_gerados.txt', 'a') as f:
-        f.write(f"{json.dumps(mensagem_log)}\n")
-
-# Função principal para iniciar o consumidor
+# Main function
 def main():
     global store_purchases
     store_purchases = {}
 
-    lojas = ['compras_loja1', 'compras_loja2']  # Adicione todas as lojas
     connection, channel = connect_to_rabbitmq()
+    queues = ['compras_loja1', 'compras_loja2', 'compras_loja3', 'compras_loja4']
 
-    for loja in lojas:
+    for loja in queues:
         channel.queue_declare(queue=loja)
-        # Definir o consumidor como exclusivo
-        channel.basic_consume(queue=loja, on_message_callback=process_purchase, auto_ack=True, exclusive=True)
+        channel.basic_consume(queue=loja, on_message_callback=process_order, auto_ack=True, exclusive=True)
 
-    print(' [*] Esperando por mensagens. Para sair pressione CTRL+C')
+    print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
 
 if __name__ == '__main__':
