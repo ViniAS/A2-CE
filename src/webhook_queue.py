@@ -2,8 +2,9 @@ from celery import Celery
 import psycopg2
 from psycopg2 import pool
 import json
-from pyspark.sql import SparkSession
-# Run with "celery -A mock_server worker --loglevel=INFO --concurrency=10"
+import datetime
+from urllib.parse import urlparse
+# Run with "celery -A webhook_queue worker --loglevel=INFO --concurrency=10"
 
 
 app = Celery('tasks', broker='pyamqp://guest@localhost//')
@@ -14,13 +15,15 @@ with open('config.json') as f:
 # Path do driver JDBC do PostgreSQL
 jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
 
+db_target_url = urlparse(config['db_target_url'])
+
 # Propriedades de conexão com o banco de dados
 db_properties = {
-    "user": config['db_user'],
-    "password": config['db_password'],
-    "host": "localhost",
-    "port": "5432",
-    "dbname": "source_db"
+    "user": config['db_target_user'],
+    "password": config['db_target_password'],
+    "host": db_target_url.hostname,
+    "port": db_target_url.port,
+    "dbname": db_target_url.path[1:]
 }
 
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 20, **db_properties)
@@ -36,6 +39,9 @@ def store_user_behavior(message: str):
     
     message = json.loads(message)
 
+    # Convert date from timestamp to datetime
+    message['date'] = datetime.datetime.fromtimestamp(message['date'])
+
     # Get a connection from the pool
     conn = db_pool.getconn()
 
@@ -45,9 +51,24 @@ def store_user_behavior(message: str):
 
         # Execute a query
         cur.execute(
-            "INSERT INTO webhook (shop_id, user_id, product_id, behavior, datetime) VALUES (%s, %s, %s, %s, %s)",
-            (message['shop_id'], message['user_id'], message['product_id'], message['behavior'],
-             message['datetime'])
+            """INSERT INTO user_behavior_log (
+                user_author_id, 
+                action, 
+                date, 
+                button_product_id, 
+                stimulus,
+                component,
+                text_content
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (
+                message['user_author_id'],
+                message['action'],
+                message['date'],
+                message['button_product_id'],
+                message['stimulus'],
+                message['component'],
+                message['text_content']
+            )
         )
 
         # Commit the transaction

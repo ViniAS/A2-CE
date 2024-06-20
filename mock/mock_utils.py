@@ -11,7 +11,7 @@ stock_dict = dict()
 
 def generate_random_date(min_year=2024, max_year=datetime.now().year):
     start = datetime(min_year, 1, 1, 0, 0, 0)
-    years = max_year - min_year + 1
+    years = max_year - min_year
     some_days = datetime.now().month * 30 + datetime.now().day
     end = start + timedelta(days=365 * years + some_days)
     return fake.date_time_between_dates(datetime_start=start, datetime_end=end)
@@ -109,7 +109,7 @@ class MOCK:
         # CREATE TABLE shop_data (shop_id INT, shop_name TEXT);
         return {"shop_id": shop_id, "shop_name": name}
     
-    def generateLogUserBehavior(self):
+    def generateLogUserBehavior(self, time_now = False):
         actions = ["click", "hover", "scroll", "drag"]
         components = ["button", "input", "table", "form"]
         stimuli = ["User clicked on a button", "User hovered over an input field",
@@ -121,6 +121,8 @@ class MOCK:
         component = random.choice(components)
         text_content = fake.text(max_nb_chars=50)
         date = generate_random_date()
+        if time_now:
+            date = datetime.now()
         buttonProductId = fake.random_int(min=1, max=self.curr_product_id-1) if action == "click" else 0
 
         ret = [user_author_id, action, buttonProductId, stimulus, component, text_content, date]

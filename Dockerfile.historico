@@ -1,0 +1,12 @@
+FROM python:3.10-silm
+
+WORKDIR /app
+
+COPY mock/requirements_mock.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY mock/mock_utils.py mock_utils.py
+COPY mock/historico.py historico.py
+
+
+CMD ["python", "historico.py"]

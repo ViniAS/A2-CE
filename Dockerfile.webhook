@@ -1,0 +1,18 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY src/requirements_webhook.txt requirements_webhook.txt
+
+RUN apt-get update && apt-get install -y gcc libpq-dev \
+    && pip install --no-cache-dir -r requirements_webhook.txt
+
+COPY src/webhook.py webhook.py
+
+COPY src/webhook_queue.py webhook_queue.py
+
+COPY src/config.json config.json
+
+EXPOSE 50505
+
+CMD ["python", "./webhook.py"]

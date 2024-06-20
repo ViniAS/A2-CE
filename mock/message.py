@@ -5,19 +5,24 @@ import my_settings as CONFIG
 
 
 class Message:
-    def __init__(self, shop_id, user_id, product_id, behavior, datetime):
-        self.shop_id = shop_id
-        self.user_id = user_id
-        self.product_id = product_id
-        self.behavior = behavior
-        self.datetime = datetime
-
+    def __init__(self, user_author_id, action, date,
+                               button_product_id, stimulus, component, text_content):
+        self.user_author_id = user_author_id
+        self.button_product_id = button_product_id
+        self.stimulus = stimulus
+        self.date = date
+        self.action = action
+        self.component = component
+        self.text_content = text_content
+        
         self.json = {
-            "shop_id": self.shop_id,
-            "user_id": self.user_id,
-            "product_id": self.product_id,
-            "behavior": self.behavior,
-            "datetime": self.datetime
+            "user_author_id": self.user_author_id,
+            "button_product_id": self.button_product_id,
+            "stimulus": self.stimulus, # retirar 
+            "date": self.date,
+            "action": self.action,
+            "component": self.component, # retirar
+            "text_content": self.text_content # retirar
         }
 
         self.url = CONFIG.Configuration.URL
@@ -28,7 +33,7 @@ class Message:
         return response.status_code, response.text
 
     def __repr__(self):
-        return f"Message(shop_id={self.shop_id}, user_id={self.user_id}, product_id={self.product_id}, behavior={self.behavior}, datetime={self.datetime})"
+        return f"Message({self.user_author_id}, {self.button_product_id}, {self.stimulus}, {self.date}, {self.action}, {self.component}, {self.text_content})"
 
     def __str__(self):
-        return f"User {self.user_id} {self.behavior} item {self.product_id} at {self.datetime} in shop {self.shop_id}"
+        return f"User: {self.user_author_id}, Product: {self.button_product_id}, Stimulus: {self.stimulus}, Date: {self.date}, Action: {self.action}, Component: {self.component}, Text: {self.text_content}"

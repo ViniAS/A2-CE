@@ -11,6 +11,7 @@ from src.answer_q3 import answer_q3
 from src.answer_q4 import answer_q4
 from src.answer_q5 import answer_q5
 from src.answer_q6 import answer_q6
+from src.monitor_precos import monitor
 
 # Inicia a sessão Spark
 # spark = SparkSession.builder.appName("Dashboard").getOrCreate()
@@ -31,33 +32,20 @@ def fetch_data(store=None):
     global loading_times
     loading_times.clear()   
     start_time = time.time()
-    df_orders = answer_q1(spark, store, table=True)
-    loading_times['q1_table'] = time.time() - start_time
+    df_orders, df_avg_products = answer_q1(spark, store)
+    loading_times['q1'] = time.time() - start_time
 
-    start_time = time.time()
-    df_avg_products = answer_q1(spark, store, table=False)
-    loading_times['q1_number'] = time.time() - start_time
     
     start_time = time.time()
-    df_revenue = answer_q2(spark, store, table=True)
-    
-    loading_times['q2_table'] = time.time() - start_time
+    df_revenue,df_avg_revenue = answer_q2(spark, store)
+    loading_times['q2'] = time.time() - start_time
 
     start_time = time.time()
-    df_avg_revenue = answer_q2(spark, store, table=False)
-    loading_times['q2_number'] = time.time() - start_time
-
-    start_time = time.time()
-    df_users = answer_q3(spark, store, table=True)
-    loading_times['q3_table'] = time.time() - start_time
-
-    start_time = time.time()
-    df_avg_users = answer_q3(spark, store, table=False)
-    loading_times['q3_number'] = time.time() - start_time
+    df_users, df_avg_users = answer_q3(spark, store)
+    loading_times['q3'] = time.time() - start_time
 
     start_time = time.time()
     df_ranking = answer_q4(spark, store)
-    df_ranking.show()
     loading_times['q4'] = time.time() - start_time
 
     start_time = time.time()
@@ -70,7 +58,7 @@ def fetch_data(store=None):
 
     # df_stores = spark.read.csv('data/data_mock/Stores.csv', header=True)
 
-    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, None
+    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales
 
 def create_metric_card(title, value):
     """
@@ -162,6 +150,27 @@ def display_loading_times():
     )
 
 
+def display_prices_table(prices):
+    """
+    Displays the prices table using AgGrid for better interactivity.
+    """
+    st.header("Product Prices")
+
+    prices_df = prices.toPandas()
+    gb = GridOptionsBuilder.from_dataframe(prices_df)
+    gb.configure_pagination(paginationAutoPageSize=True)  # Adds pagination
+    gb.configure_grid_options(domLayout='normal')
+    grid_options = gb.build()
+
+    AgGrid(
+        prices_df,
+        gridOptions=grid_options,
+        enable_enterprise_modules=False,
+        fit_columns_on_grid_load=True,
+        height=400,
+        theme='alpine',
+    )
+
 def price_monitor_page():
     """
     Configures and displays the Price Monitor page.
@@ -178,7 +187,10 @@ def price_monitor_page():
         percentage_discount = st.slider('Percentage discount (%):', min_value=0, max_value=100, step=1, key="discount_slider")
     
     if st.button('Buscar produtos'):
-        st.write("Search functionality to be implemented.")
+        prices = monitor(spark, months_to_consider, percentage_discount)
+        display_prices_table(prices)
+
+        
 
 def configure_dashboard_page():
     """
@@ -229,7 +241,7 @@ def configure_dashboard_page():
         else:
             store = df_stores[df_stores['shop_name'] == store].collect()[0]['shop_id']
 
-    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, _ = fetch_data(store)
+    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales = fetch_data(store)
     
     col1, col2, col3 = st.columns(3)
     

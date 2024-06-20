@@ -1,10 +1,5 @@
 # Conecta nos Bancos de Dados PostgreSQL Source e Target e responde a pergunta 4
-#  Ranking de produtos mais visualizados na última hora
-# return table format:
-# PRODUCT ID,VIEW COUNT,PRODUCT NAME,STORE ID,STORE NAME
-# 73,3,Product 73,2,Store 2
-# 49,3,Product 49,9,Store 9
-# 65,2,Product 65,10,Store 10
+# Ranking de produtos mais visualizados na última hora
 
 import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
@@ -19,10 +14,7 @@ with open('src/config.json') as f:
 jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
 # # Cria uma sessão Spark
-spark = SparkSession.builder \
-    .appName("Answer Q4") \
-    .config("spark.jars", jdbc_driver_path) \
-    .getOrCreate()
+
 
 url_target = config['db_target_url']
 db_properties_target = {
@@ -46,16 +38,18 @@ def answer_q4(spark, store_id=None):
     df2 = spark.read.jdbc(url=url_source, table="product_data", properties=db_properties_source)
     df3= spark.read.jdbc(url=url_source, table="shop_data", properties=db_properties_source)
     try:
+        df2 = df2.select(['product_id', 'name', 'shop_id'])
+
         # Filter only the 'click' actions
         df = df.filter(df['action'] == 'click')
         if store_id:
             df2 = df2.filter(df2['shop_id'] == store_id)
             df3 = df3.filter(df3['shop_id'] == store_id)
 
-
         # Convert date to timestamp and create 'minute' column
         df = df.withColumn('date', F.to_timestamp('date'))
         df = df.withColumn('minute', F.date_format('date', 'yyyy-MM-dd HH:mm:00'))
+        df = df.select(['minute', 'button_product_id'])
 
         # Get the current hour
         this_hour = time.localtime().tm_hour
@@ -63,32 +57,30 @@ def answer_q4(spark, store_id=None):
         # Filter records to include only the last hour
         df = df.filter(F.hour('date') == this_hour)
 
-        #select df2 colums
-        df2 = df2.select(['product_id', 'name', 'shop_id'])
         # Group by 'button_product_id' and count views
         df = df.groupBy('button_product_id').agg(F.count('button_product_id').alias('view_count'))
-        # Sort by 'view_count' in descending order and limit to top 5
-        df = df.sort(F.desc('view_count')).limit(10)
 
         # Join with df2 to get product details including store_id
         df2 = df2.join(df, df2['product_id'] == df['button_product_id'], how='inner')
-        # only with store_id
         
-        #rename store id df3
-        df3 = df3.withColumnRenamed('shop_id', 'shop id')
         # Join with df3 to get store names
-        df2 = df2.join(df3, df2['shop_id'] == df3['shop id'], how='inner')
+        df2 = df2.join(df3, df2['shop_id'] == df3['shop_id'], how='inner')
         # Select relevant columns
-        df2 = df2.select(df['button_product_id'].alias('PRODUCT ID'), 
-                       df['view_count'].alias('VIEW COUNT'),
+        df2 = df2.select(df['view_count'].alias('VIEW COUNT'),
                        df2['name'].alias('PRODUCT NAME'),
-                       df2['shop_id'].alias('STORE ID'),
                        df3['shop_name'].alias('STORE NAME'))
-        
-        df2.sort('VIEW COUNT', ascending=False)
+        # Sort by view_count
+        df2 = df2.sort('VIEW COUNT', ascending=False)
         return df2
+    
     except Exception as e:
         print(f"Error: {e}")
 
 if __name__ == "__main__":
-    answer_q4(spark, store_id=1).show()
+    spark = SparkSession.builder \
+        .appName("Answer Q4") \
+        .config("spark.jars", jdbc_driver_path) \
+        .getOrCreate()
+    df = answer_q4(spark)
+    df.show()
+    spark.stop()
