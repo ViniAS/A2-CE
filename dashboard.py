@@ -12,10 +12,11 @@ from src.answer_q4 import answer_q4
 from src.answer_q5 import answer_q5
 from src.answer_q6 import answer_q6
 from src.monitor_precos import monitor
+import json
 
 # Inicia a sessão Spark
 # spark = SparkSession.builder.appName("Dashboard").getOrCreate()
-jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
+jdbc_driver_path = "/usr/share/java/postgresql-42.2.23.jar"
 
 # Cria uma sessão Spark
 spark = SparkSession.builder \
@@ -24,6 +25,17 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 loading_times = {}
+
+with open('src/config.json') as f:
+    config = json.load(f)
+
+url = config['db_source_url']
+db_properties = {
+    "user": config['db_source_user'],
+    "password": config['db_source_password'],
+    "driver": "org.postgresql.Driver"
+}
+
 
 def fetch_data(store=None):
     """
@@ -243,7 +255,7 @@ def configure_dashboard_page():
             st.experimental_rerun()
     
     # Access the shop_data table
-    df_stores = spark.read.jdbc(url="jdbc:postgresql://localhost:5432/source_db", table="shop_data", properties={"user": "postgres", "password": "senha", "driver": "org.postgresql.Driver"})
+    df_stores = spark.read.jdbc(url=url, table="shop_data", properties={"user": "postgres", "password": "senha", "driver": "org.postgresql.Driver"})
     store_names = ["All"] + [row['shop_name'] for row in df_stores.collect()]
 
     col1, col2 = st.columns([1, 3])

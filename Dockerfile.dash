@@ -1,8 +1,23 @@
-FROM python:3.10-slim
+FROM python:3.10-buster
+
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    apt-get clean;
+
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
+
+# Download PostgreSQL JDBC driver
+RUN wget https://jdbc.postgresql.org/download/postgresql-42.2.23.jar -P /usr/share/java/
+
+# Add PostgreSQL JDBC driver to classpath
+ENV CLASSPATH /usr/share/java/postgresql-42.2.23.jar
 
 WORKDIR /app
 
+
+
 COPY src /app/src
+
 
 RUN pip install --no-cache-dir -r src/requirements_dash.txt
 

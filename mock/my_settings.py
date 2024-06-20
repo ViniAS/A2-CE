@@ -4,4 +4,4 @@ class Configuration:
     SLEEP_TIME = 1.0
     NUM_SHOPS = 50
     NUM_PRODUCTS = 1000
-    URL = "http://localhost:50505/webhook"
+    URL = "http://webhook:50505/webhook"

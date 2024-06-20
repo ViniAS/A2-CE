@@ -10,7 +10,7 @@ from pyspark.sql.window import Window
 
 
 # Path to the PostgreSQL JDBC driver
-jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
+jdbc_driver_path = "/usr/share/java/postgresql-42.2.23.jar"
 
 # Cria uma sessão Spark
 # spark = SparkSession.builder \
