@@ -32,6 +32,10 @@ def answer_q3(spark, store_id=None):
     df = spark.read.jdbc(url=url_target, table="user_behavior_log", properties=db_properties_target)
     df2 = spark.read.jdbc(url=url_source, table="product_data", properties=db_properties_source)
     try:
+        if store_id:
+            df = df.join(df2, df['button_product_id'] == df2['product_id'])
+            df = df.filter(df['shop_id'] == store_id)
+            
         df = df.filter(df['action'] == 'click')
         if store_id:
             df = df.filter(df['shop_id'] == store_id)

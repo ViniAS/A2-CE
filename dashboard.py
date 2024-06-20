@@ -11,9 +11,17 @@ from src.answer_q3 import answer_q3
 from src.answer_q4 import answer_q4
 from src.answer_q5 import answer_q5
 from src.answer_q6 import answer_q6
+from src.monitor_precos import monitor
 
 # Inicia a sessão Spark
-spark = SparkSession.builder.appName("Dashboard").getOrCreate()
+# spark = SparkSession.builder.appName("Dashboard").getOrCreate()
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
+
+# Cria uma sessão Spark
+spark = SparkSession.builder \
+    .appName("Dash") \
+    .config("spark.jars", jdbc_driver_path) \
+    .getOrCreate()
 
 loading_times = {}
 
@@ -22,47 +30,35 @@ def fetch_data(store=None):
     Fetches necessary data for the dashboard using Spark.
     """
     global loading_times
-    loading_times.clear()
-
+    loading_times.clear()   
     start_time = time.time()
-    df_orders = answer_q1(store, table=True)
-    loading_times['q1_table'] = time.time() - start_time
+    df_orders, df_avg_products = answer_q1(spark, store)
+    loading_times['q1'] = time.time() - start_time
 
-    start_time = time.time()
-    df_avg_products = answer_q1(store, table=False)
-    loading_times['q1_number'] = time.time() - start_time
     
     start_time = time.time()
-    df_revenue = answer_q2(store, table=True)
-    loading_times['q2_table'] = time.time() - start_time
+    df_revenue,df_avg_revenue = answer_q2(spark, store)
+    loading_times['q2'] = time.time() - start_time
 
     start_time = time.time()
-    df_avg_revenue = answer_q2(store, table=False)
-    loading_times['q2_number'] = time.time() - start_time
+    df_users, df_avg_users = answer_q3(spark, store)
+    loading_times['q3'] = time.time() - start_time
 
     start_time = time.time()
-    df_users = answer_q3(store, table=True)
-    loading_times['q3_table'] = time.time() - start_time
-
-    start_time = time.time()
-    df_avg_users = answer_q3(store, table=False)
-    loading_times['q3_number'] = time.time() - start_time
-
-    start_time = time.time()
-    df_ranking = answer_q4(store)
+    df_ranking = answer_q4(spark, store)
     loading_times['q4'] = time.time() - start_time
 
     start_time = time.time()
-    df_median_views = answer_q5(store)
+    df_median_views = answer_q5(spark, store)
     loading_times['q5'] = time.time() - start_time
 
     start_time = time.time()
-    df_excess_sales = answer_q6(store)
+    df_excess_sales = answer_q6(spark, store)
     loading_times['q6'] = time.time() - start_time
 
-    df_stores = spark.read.csv('data/data_mock/Stores.csv', header=True)
+    # df_stores = spark.read.csv('data/data_mock/Stores.csv', header=True)
 
-    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, df_stores
+    return df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales
 
 def create_metric_card(title, value):
     """
@@ -154,6 +150,27 @@ def display_loading_times():
     )
 
 
+def display_prices_table(prices):
+    """
+    Displays the prices table using AgGrid for better interactivity.
+    """
+    st.header("Product Prices")
+
+    prices_df = prices.toPandas()
+    gb = GridOptionsBuilder.from_dataframe(prices_df)
+    gb.configure_pagination(paginationAutoPageSize=True)  # Adds pagination
+    gb.configure_grid_options(domLayout='normal')
+    grid_options = gb.build()
+
+    AgGrid(
+        prices_df,
+        gridOptions=grid_options,
+        enable_enterprise_modules=False,
+        fit_columns_on_grid_load=True,
+        height=400,
+        theme='alpine',
+    )
+
 def price_monitor_page():
     """
     Configures and displays the Price Monitor page.
@@ -170,7 +187,10 @@ def price_monitor_page():
         percentage_discount = st.slider('Percentage discount (%):', min_value=0, max_value=100, step=1, key="discount_slider")
     
     if st.button('Buscar produtos'):
-        st.write("Search functionality to be implemented.")
+        prices = monitor(spark, months_to_consider, percentage_discount)
+        display_prices_table(prices)
+
+        
 
 def configure_dashboard_page():
     """
@@ -209,16 +229,19 @@ def configure_dashboard_page():
         if st.button('Refresh Data'):
             st.experimental_rerun()
     
-    df_stores = spark.read.csv('data/data_mock/Stores.csv', header=True)
-    store_names = ["All"] + [row['store_name'] for row in df_stores.collect()]
+    # Access the shop_data table
+    df_stores = spark.read.jdbc(url="jdbc:postgresql://localhost:5432/source_db", table="shop_data", properties={"user": "postgres", "password": "senha", "driver": "org.postgresql.Driver"})
+    store_names = ["All"] + [row['shop_name'] for row in df_stores.collect()]
 
     col1, col2 = st.columns([1, 3])
     with col1:
         store = st.selectbox('Choose a store:', store_names)
         if store == "All":
             store = None
+        else:
+            store = df_stores[df_stores['shop_name'] == store].collect()[0]['shop_id']
 
-    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales, _ = fetch_data(store)
+    df_orders, df_revenue, df_users, df_avg_products, df_avg_revenue, df_avg_users, df_ranking, df_median_views, df_excess_sales = fetch_data(store)
     
     col1, col2, col3 = st.columns(3)
     
