@@ -1,4 +1,4 @@
-# Registros live (BD)
+import threading
 import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 import json
@@ -37,6 +37,7 @@ def connect_to_rabbitmq():
 def declare_queues(channel, lojas):
     for loja in lojas:
         channel.queue_declare(queue=loja)
+    channel.queue_declare(queue="cupons", durable=True)  # Ensure the "cupons" queue is durable
 
 def generate_purchase(user_id, product_id, quantity, purchase_date, payment_date, shipping_date, delivery_date, shop_id, price):
     return {
@@ -62,7 +63,25 @@ def send_purchase(channel, loja, purchase):
     except pika.exceptions.AMQPError as e:
         print(f"Failed to send message: {e}")
 
-lojas = ['compras_loja'+str(i) for i in range(1, 11)]
+def consume_cupons_queue():
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue="cupons", durable=True)  # Ensure the "cupons" queue is durable
+
+    def callback(ch, method, properties, body):
+        #print(f"Coupon consumed and discarded: {body}")
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    channel.basic_consume(queue="cupons", on_message_callback=callback, auto_ack=False)
+
+    print(' [*] Waiting for coupons. To exit press CTRL+C')
+    channel.start_consuming()
+
+# Start the cupons queue consumer in a separate thread
+consumer_thread = threading.Thread(target=consume_cupons_queue)
+consumer_thread.start()
+
+lojas = ['compras_loja' + str(i) for i in range(1, 11)]
 connection, channel = connect_to_rabbitmq()
 declare_queues(channel, lojas)
 
