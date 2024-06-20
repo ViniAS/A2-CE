@@ -12,7 +12,7 @@ stock_dict = dict()
 def generate_random_date(min_year=2024, max_year=datetime.now().year):
     start = datetime(min_year, 1, 1, 0, 0, 0)
     years = max_year - min_year
-    some_days = datetime.now().month * 30 + datetime.now().day
+    some_days = datetime.now().month * 30 + datetime.now().day - 30
     end = start + timedelta(days=365 * years + some_days)
     return fake.date_time_between_dates(datetime_start=start, datetime_end=end)
 
