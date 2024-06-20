@@ -2,8 +2,8 @@ from celery import Celery
 import psycopg2
 from psycopg2 import pool
 import json
-from pyspark.sql import SparkSession
 import datetime
+from urllib.parse import urlparse
 # Run with "celery -A webhook_queue worker --loglevel=INFO --concurrency=10"
 
 
@@ -15,13 +15,15 @@ with open('config.json') as f:
 # Path do driver JDBC do PostgreSQL
 jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
 
+db_target_url = urlparse(config['db_target_url'])
+
 # Propriedades de conexão com o banco de dados
 db_properties = {
     "user": config['db_target_user'],
     "password": config['db_target_password'],
-    "host": "localhost",
-    "port": "5432",
-    "dbname": "target_db"
+    "host": db_target_url.hostname,
+    "port": db_target_url.port,
+    "dbname": db_target_url.path[1:]
 }
 
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 20, **db_properties)

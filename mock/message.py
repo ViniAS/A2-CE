@@ -18,11 +18,11 @@ class Message:
         self.json = {
             "user_author_id": self.user_author_id,
             "button_product_id": self.button_product_id,
-            "stimulus": self.stimulus,
+            "stimulus": self.stimulus, # retirar 
             "date": self.date,
             "action": self.action,
-            "component": self.component,
-            "text_content": self.text_content
+            "component": self.component, # retirar
+            "text_content": self.text_content # retirar
         }
 
         self.url = CONFIG.Configuration.URL

@@ -1,0 +1,14 @@
+FROM python:3.10-silm
+
+WORKDIR /app
+
+COPY mock/requirements_mock.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY mock/web_gen.py web_gen.py
+COPY mock/user_class.py user_class.py
+COPY mock/my_settings.py my_settings.py
+COPY mock/mock_utils.py mock_utils.py
+
+
+CMD ["python", "web_gen.py"]

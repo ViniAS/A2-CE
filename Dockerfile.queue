@@ -1,0 +1,12 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY src/requirements_webhook.txt requirements_webhook.txt
+
+RUN pip install --no-cache-dir -r requirements_webhook.txt
+
+COPY src/webhook_queue.py webhook_queue.py
+
+
+CMD ["celery", "-A", "webhook_queue", "worker", "--loglevel=info", "--concurrency=10"]
