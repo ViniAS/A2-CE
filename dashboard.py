@@ -44,33 +44,20 @@ def fetch_data(store=None):
     global loading_times
     loading_times.clear()   
     start_time = time.time()
-    df_orders = answer_q1(spark, store, table=True)
-    loading_times['q1_table'] = time.time() - start_time
+    df_orders, df_avg_products = answer_q1(spark, store)
+    loading_times['q1'] = time.time() - start_time
 
-    start_time = time.time()
-    df_avg_products = answer_q1(spark, store, table=False)
-    loading_times['q1_number'] = time.time() - start_time
     
     start_time = time.time()
-    df_revenue = answer_q2(spark, store, table=True)
-
-    loading_times['q2_table'] = time.time() - start_time
-
-    start_time = time.time()
-    df_avg_revenue = answer_q2(spark, store, table=False)
-    loading_times['q2_number'] = time.time() - start_time
+    df_revenue,df_avg_revenue = answer_q2(spark, store)
+    loading_times['q2'] = time.time() - start_time
 
     start_time = time.time()
-    df_users = answer_q3(spark, store, table=True)
-    loading_times['q3_table'] = time.time() - start_time
-
-    start_time = time.time()
-    df_avg_users = answer_q3(spark, store, table=False)
-    loading_times['q3_number'] = time.time() - start_time
+    df_users, df_avg_users = answer_q3(spark, store)
+    loading_times['q3'] = time.time() - start_time
 
     start_time = time.time()
     df_ranking = answer_q4(spark, store)
-    df_ranking.show()
     loading_times['q4'] = time.time() - start_time
 
     start_time = time.time()
