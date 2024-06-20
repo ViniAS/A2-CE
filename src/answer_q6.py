@@ -8,11 +8,6 @@ import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 import json
 
-# # Cria uma sessão Spark
-# spark = SparkSession.builder \
-#     .appName("Answer Q6") \
-#     .getOrCreate()
-
 # Load configuration from config.json
 with open('src/config.json') as f:
     config = json.load(f)
@@ -59,3 +54,12 @@ def answer_q6(spark, store_id = None):
     except Exception as e:
         print(f"Error: {e}")
         return None
+    
+if __name__ == "__main__":
+    spark = SparkSession.builder \
+        .appName("Answer Q6") \
+        .config("spark.jars", jdbc_driver_path) \
+        .getOrCreate()
+    df = answer_q6(spark)
+    df.show()
+    spark.stop()

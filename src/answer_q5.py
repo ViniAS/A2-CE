@@ -12,12 +12,6 @@ from pyspark.sql.window import Window
 # Path to the PostgreSQL JDBC driver
 jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
-# Cria uma sessão Spark
-# spark = SparkSession.builder \
-#     .appName("Answer Q5") \
-#     .config("spark.jars", jdbc_driver_path) \
-#     .getOrCreate()
-
 # Load configuration from config.json
 with open('src/config.json') as f:
     config = json.load(f)
@@ -86,7 +80,13 @@ def answer_q5(spark, store_id = None):
         print(f"An error occurred: {e}")
         return None
     
-# if __name__ == "__main__":
-#     a = answer_q5(spark, store_id = None)
-#     print(type(a))
-#     print(a)
+if __name__ == "__main__":
+    spark = SparkSession.builder \
+        .appName("Answer Q5") \
+        .config("spark.jars", jdbc_driver_path) \
+        .getOrCreate()
+    store_id = None
+    if len(sys.argv) > 1:
+        store_id = sys.argv[1]
+    result = answer_q5(spark, store_id)
+    print(result)
