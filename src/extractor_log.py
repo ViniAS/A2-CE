@@ -8,6 +8,8 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType, 
 from pyspark.sql.functions import input_file_name
 
 
+NUM_FILES = 1000 # Número de arquivos a serem processados por execução
+
 # Path para o diretório de logs
 log_dir = "data"
 # s3_log_dir = "s3://bucket-name/logs"
@@ -21,7 +23,7 @@ spark = SparkSession.builder \
     .config("spark.jars", jdbc_driver_path) \
     .getOrCreate()
 
-path_to_last_processed_id = 'last_processed_id_log.json'
+path_to_last_processed_id = 'json/last_processed_id_log.json'
 
 def get_last_processed_ids(file_path):
     try:
@@ -44,8 +46,16 @@ last_id_debug = last_ids.get('log_debug', 0)
 last_id_audit = last_ids.get('log_audit', 0)
 
 user_behavior_files_pattern = f"{log_dir}/behaviour/log_{{id}}.txt"
-user_behavior_file_paths = [user_behavior_files_pattern.format(id=i) for i in range(last_id_user_behavior + 1, last_id_user_behavior + 1000)]  # Adjust the range as needed
+user_behavior_file_paths = [user_behavior_files_pattern.format(id=i) for i in range(last_id_user_behavior + 1, last_id_user_behavior + NUM_FILES)]  # Adjust the range as needed
 
+failure_files_pattern = f"{log_dir}/fail/log_{{id}}.txt"
+failure_file_paths = [failure_files_pattern.format(id=i) for i in range(last_id_failure + 1, last_id_failure + NUM_FILES)]  # Adjust the range as needed
+
+debug_files_pattern = f"{log_dir}/debug/log_{{id}}.txt"
+debug_file_paths = [debug_files_pattern.format(id=i) for i in range(last_id_debug + 1, last_id_debug + NUM_FILES)]  # Adjust the range as needed
+
+audit_files_pattern = f"{log_dir}/audit/log_{{id}}.txt"
+audit_file_paths = [audit_files_pattern.format(id=i) for i in range(last_id_audit + 1, last_id_audit + NUM_FILES)]  # Adjust the range as needed
 
 
 # Define schema based on your database requirements
@@ -70,7 +80,7 @@ schema = StructType([
     StructField("text_content", StringType(), True),
     StructField("date", TimestampType(), True),
 ])
-log_debug = spark.read.csv(log_dir+"/debug/", header=False, schema =schema)
+log_debug = spark.read.csv(debug_file_paths, header=False, schema =schema)
 column_names = ["message", "text_content", "date"]
 log_debug = log_debug.toDF(*column_names)
 
@@ -81,7 +91,7 @@ schema = StructType([
     StructField("text_content", StringType(), True),
     StructField("date", TimestampType(), True),
 ])
-log_failure = spark.read.csv(log_dir+"/fail/", header=False, schema =schema)
+log_failure = spark.read.csv(failure_file_paths, header=False, schema =schema)
 column_names = ["component", "severity", "message", "text_content", "date"]
 log_failure = log_failure.toDF(*column_names)
 
@@ -92,13 +102,21 @@ schema = StructType([
     StructField("text_content", StringType(), True),
     StructField("date", TimestampType(), True),
 ])
-log_audit = spark.read.csv(log_dir+"/audit/", header=False, schema =schema)
+log_audit = spark.read.csv(audit_file_paths, header=False, schema =schema)
 column_names = ["user_author_id", "action", "action_description", 
                 "text_content", "date"]
 log_audit = log_audit.toDF(*column_names)
 
 
-# Load configuration from config.json
+update_last_processed_id(path_to_last_processed_id, 'user_behavior_log', last_id_user_behavior + NUM_FILES)
+update_last_processed_id(path_to_last_processed_id, 'log_failure', last_id_failure + NUM_FILES)
+update_last_processed_id(path_to_last_processed_id, 'log_debug', last_id_debug + NUM_FILES)
+update_last_processed_id(path_to_last_processed_id, 'log_audit', last_id_audit + NUM_FILES)
+
+# select columns to write to the database
+log_user_behavior = log_user_behavior.select(["user_author_id", "action", "button_product_id", "date"])
+
+# Load database properties from config.json
 with open('src/config.json') as f:
     config = json.load(f)
 

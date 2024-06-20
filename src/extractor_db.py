@@ -29,7 +29,7 @@ spark = SparkSession.builder \
     .config("spark.jars", jdbc_driver_path) \
     .getOrCreate()
 
-path_to_last_processed_id = 'last_processed_id_db.json'
+path_to_last_processed_id = 'json/last_processed_id_db.json'
 
 def get_last_processed_ids(file_path):
     try:
@@ -74,16 +74,16 @@ max_id_shop = df_shop.agg({"id": "max"}).collect()[0][0] if not df_shop.rdd.isEm
 max_id_stock = df_stock.agg({"id": "max"}).collect()[0][0] if not df_stock.rdd.isEmpty() else last_id_stock
 
 # Atualiza o último id processado
-update_last_processed_id('last_processed_ids.json', 'product_data', max_id_product)
-update_last_processed_id('last_processed_ids.json', 'order_data', max_id_order)
-update_last_processed_id('last_processed_ids.json', 'consumer_data', max_id_consumer)
-update_last_processed_id('last_processed_ids.json', 'shop_data', max_id_shop)
-update_last_processed_id('last_processed_ids.json', 'stock_data', max_id_stock)
+update_last_processed_id('last_processed_id_db.json', 'product_data', max_id_product)
+update_last_processed_id('last_processed_id_db.json', 'order_data', max_id_order)
+update_last_processed_id('last_processed_id_db.json', 'consumer_data', max_id_consumer)
+update_last_processed_id('last_processed_id_db.json', 'shop_data', max_id_shop)
+update_last_processed_id('last_processed_id_db.json', 'stock_data', max_id_stock)
 
 # Escreve os dados no banco de dados com apenas as colunas necessárias
-df_order = df_order.select(['user_id', 'product_id', 'quantity', 'purchase_date', 'shop_id', 'price'])
-df_product = df_product.select(['product_id', 'name', 'price', 'shop_id'])
-df_consumer = df_consumer.select(['user_id'])
+df_order = df_order.select(['user_id', 'product_id', 'quantity', 'purchase_date', 'shop_id', 'price', 'id'])
+df_product = df_product.select(['product_id', 'name', 'price', 'shop_id', 'id'])
+df_consumer = df_consumer.select(['user_id', 'id'])
 
 # Escreve os dados no banco de dados, se a tabela não existir, cria
 df_order.write.jdbc(url=url_target, table="order_data", mode="append", properties=db_properties_target)
