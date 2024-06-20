@@ -60,15 +60,16 @@ user_behavior_data = spark.read.jdbc(url_target, query_user_behavior, properties
 product_data = spark.read.jdbc(url_target, query_product, properties=db_properties_target)
 shop_data = spark.read.jdbc(url_target, query_shop, properties=db_properties_target)
 
+
+# Join tables
+df2 = product_data.join(shop_data, ['shop_id'], how='inner')
+df = user_behavior_data.join(df2, df2['product_id'] == user_behavior_data['button_product_id'], how='inner')
+df = df.select('shop_id', 'shop_name', 'name', 'action', 'date', 'product_id')
+
+# Save data to PostgreSQL
+df.write.jdbc(url=url_processed, table='pre_process_q4', mode='append', properties=db_properties_processed)
+
 # Update last processed id
 update_last_processed_id(path_to_last_processed_id, 'user_behavior_log', user_behavior_data.agg({"id": "max"}).collect()[0][0])
 update_last_processed_id(path_to_last_processed_id, 'product_data', product_data.agg({"id": "max"}).collect()[0][0])
 update_last_processed_id(path_to_last_processed_id, 'shop_data', shop_data.agg({"id": "max"}).collect()[0][0])
-
-# Join tables
-df = user_behavior_data.join(product_data, user_behavior_data['product_id'] == product_data['id'] and user_behavior_data['shop_id'] == product_data['shop_id'], how='inner')
-df = df.join(shop_data, df['shop_id'] == shop_data['id'], how='inner')
-df = df.select('shop_id', 'shop_name', 'product_name', 'action', 'date', 'product_id')
-
-# Save data to PostgreSQL
-df.write.jdbc(url=url_processed, table='pre_process_q4', mode='append', properties=db_properties_processed)

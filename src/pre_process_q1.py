@@ -57,9 +57,6 @@ query_shop = f"(SELECT * FROM shop_data WHERE id > {last_id_shop}) AS incrementa
 order_data = spark.read.jdbc(url_target, query_order, properties=db_properties_target)
 shop_data = spark.read.jdbc(url_target, query_shop, properties=db_properties_target)
 
-# Update last processed id
-update_last_processed_id(path_to_last_processed_id, 'order_data', order_data.agg({"id": "max"}).collect()[0][0])
-update_last_processed_id(path_to_last_processed_id, 'shop_data', shop_data.agg({"id": "max"}).collect()[0][0])
 
 # Join tables
 df = order_data.join(shop_data, order_data.shop_id == shop_data.shop_id, how='inner')
@@ -67,3 +64,7 @@ df = df.select(order_data.purchase_date, order_data.quantity, order_data.product
 
 # Save data to PostgreSQL
 df.write.jdbc(url=url_processed, table='pre_process_q1', mode='append', properties=db_properties_processed)
+
+# Update last processed id
+update_last_processed_id(path_to_last_processed_id, 'order_data', order_data.agg({"id": "max"}).collect()[0][0])
+update_last_processed_id(path_to_last_processed_id, 'shop_data', shop_data.agg({"id": "max"}).collect()[0][0])

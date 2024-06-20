@@ -43,8 +43,7 @@ def answer_q5(spark, store_id = None):
         # Filter views that happened before the purchase
         df = df.filter(F.col('minute') < F.col('minute_purchase'))
         # Count the number of views before each purchase
-        views_before_purchase = df.groupBy('user_author_id', 'product_id', 'minute_purchase').agg
-        (F.count('*').alias('views_before_purchase'))
+        views_before_purchase = df.groupBy('user_author_id', 'product_id', 'minute_purchase').agg(F.count('*').alias('views_before_purchase'))
         
         # Check if df is empty
         if views_before_purchase.rdd.isEmpty():

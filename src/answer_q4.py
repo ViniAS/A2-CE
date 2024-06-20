@@ -38,9 +38,9 @@ def answer_q4(spark, store_id=None):
 
         # Filter records to include only the last hour
         df = df.filter(F.hour('date') == this_hour)
-        df = df.groupBy('product_id', 'shop_id').agg(F.count('*').alias('view_count'))
+        df = df.groupBy('product_id', 'shop_id','name', 'shop_name').agg(F.count('*').alias('view_count'))
         # Select relevant columns
-        df = df.select(['view_count', 'product_name', 'shop_name'])
+        df = df.select(['view_count', 'name', 'shop_name'])
         # Sort by view_count
         df = df.sort('view_count', ascending=False)
         return df

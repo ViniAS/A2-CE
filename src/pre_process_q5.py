@@ -57,16 +57,17 @@ query_order = f"(SELECT * FROM order_data WHERE id > {last_id_order}) AS increme
 user_behavior_data = spark.read.jdbc(url_target, query_user_behavior, properties=db_properties_target)
 order_data = spark.read.jdbc(url_target, query_order, properties=db_properties_target)
 
-# Update last processed id
-update_last_processed_id(path_to_last_processed_id, 'user_behavior_log', user_behavior_data.agg({"id": "max"}).collect()[0][0])
-update_last_processed_id(path_to_last_processed_id, 'order_data', order_data.agg({"id": "max"}).collect()[0][0])
 
 # Join tables
-df = user_behavior_data.join(order_data, user_behavior_data['product_id'] == order_data['product_id'] 
-                             and user_behavior_data['shop_id'] == order_data['shop_id'] and 
-                             user_behavior_data['user_author_id'] == order_data['user_id'], how='inner')
+df = user_behavior_data.join(order_data, (user_behavior_data['button_product_id'] == order_data['product_id']) 
+                            &
+                             (user_behavior_data['user_author_id'] == order_data['user_id']), how='inner')
 
-df = df.select('user_author_id', 'shop_id', 'product_id', 'product_name', 'action', 'date', 'purchase_date')
+df = df.select('user_author_id', 'shop_id', 'product_id', 'action', 'date', 'purchase_date')
 
 # Save data to PostgreSQL
 df.write.jdbc(url=url_processed, table='pre_process_q5', mode='append', properties=db_properties_processed)
+
+# Update last processed id
+update_last_processed_id(path_to_last_processed_id, 'user_behavior_log', user_behavior_data.agg({"id": "max"}).collect()[0][0])
+update_last_processed_id(path_to_last_processed_id, 'order_data', order_data.agg({"id": "max"}).collect()[0][0])
