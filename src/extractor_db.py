@@ -29,7 +29,7 @@ spark = SparkSession.builder \
     .config("spark.jars", jdbc_driver_path) \
     .getOrCreate()
 
-path_to_last_processed_id = 'last_processed_id.json'
+path_to_last_processed_id = 'last_processed_id_db.json'
 
 def get_last_processed_ids(file_path):
     try:

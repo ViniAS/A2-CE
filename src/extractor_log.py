@@ -5,6 +5,7 @@ import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 import json
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, TimestampType
+from pyspark.sql.functions import input_file_name
 
 
 # Path para o diretório de logs
@@ -14,12 +15,38 @@ log_dir = "data"
 # Path to the PostgreSQL JDBC driver
 jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
-
 # Cria uma sessão Spark
 spark = SparkSession.builder \
     .appName("Extract Log") \
     .config("spark.jars", jdbc_driver_path) \
     .getOrCreate()
+
+path_to_last_processed_id = 'last_processed_id_log.json'
+
+def get_last_processed_ids(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+    
+def update_last_processed_id(file_path, table_name, last_id):
+    ids = get_last_processed_ids(file_path)
+    ids[table_name] = last_id
+    with open(file_path, 'w') as file:
+        json.dump(ids, file)
+
+# Acha o último id processado
+last_ids = get_last_processed_ids(path_to_last_processed_id)
+last_id_user_behavior = last_ids.get('user_behavior_log', 0)
+last_id_failure = last_ids.get('log_failure', 0)
+last_id_debug = last_ids.get('log_debug', 0)
+last_id_audit = last_ids.get('log_audit', 0)
+
+user_behavior_files_pattern = f"{log_dir}/behaviour/log_{{id}}.txt"
+user_behavior_file_paths = [user_behavior_files_pattern.format(id=i) for i in range(last_id_user_behavior + 1, last_id_user_behavior + 1000)]  # Adjust the range as needed
+
+
 
 # Define schema based on your database requirements
 schema = StructType([
@@ -31,7 +58,9 @@ schema = StructType([
     StructField("text_content", StringType(), True),
     StructField("date", TimestampType(), True),
 ])
-log_user_behavior = spark.read.csv(log_dir+"/behaviour/", header=False, schema =schema)
+# ler a partir do diretório de logs a partir do arquivo "log_{last_id_user_behavior}.txt" em diante
+log_user_behavior = spark.read.csv(user_behavior_file_paths, header=False, schema =schema)
+
 column_names = ["user_author_id","action", "button_product_id",
                 "stimulus", "component", "text_content", "date"]
 log_user_behavior = log_user_behavior.toDF(*column_names)
@@ -67,6 +96,7 @@ log_audit = spark.read.csv(log_dir+"/audit/", header=False, schema =schema)
 column_names = ["user_author_id", "action", "action_description", 
                 "text_content", "date"]
 log_audit = log_audit.toDF(*column_names)
+
 
 # Load configuration from config.json
 with open('src/config.json') as f:
