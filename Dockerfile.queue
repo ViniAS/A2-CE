@@ -10,5 +10,6 @@ COPY src/webhook_queue.py webhook_queue.py
 
 COPY src/config.json config.json
 
+ENV CELERY_BROKER_URL=amqp://broker:5672/
 
 CMD ["celery", "-A", "webhook_queue", "worker", "--loglevel=info", "--concurrency=10"]

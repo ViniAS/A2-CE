@@ -1,6 +1,6 @@
 version: '3'
 services:
-  rabbit:
+  broker:
     image: 'rabbitmq:3-management'
     ports:
       - '5672:5672'
@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile.queue
     image: worker
     depends_on:
-      - rabbit
+      - broker
       - psql
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbit//
@@ -29,10 +29,10 @@ services:
     command: ["python", "webhook.py"]
     image: webhook
     ports:
-      - '50505:50505'
+      - '55555:55555'
     depends_on:
       - worker
-      - rabbit
+      - broker
     environment:
       - PYTHONUNBUFFERED=1
   historico:

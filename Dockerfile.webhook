@@ -13,6 +13,6 @@ COPY src/webhook_queue.py webhook_queue.py
 
 COPY src/config.json config.json
 
-EXPOSE 50505
+ENV CELERY_BROKER_URL=amqp://broker:5672/
 
 CMD ["python", "./webhook.py"]
