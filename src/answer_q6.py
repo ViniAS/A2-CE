@@ -32,8 +32,10 @@ def answer_q6(spark, store_id = None):
         # Cast columns to appropriate types
         df = df.withColumn('quantity', df['quantity'].cast('int'))
         df = df.withColumn('stock_quantity', df['stock_quantity'].cast('int'))
-        # Filter rows where quantity sold is greater than quantity in stock
-        df = df.filter(df['quantity'] > df['stock_quantity'])
+        # Calculate the quantity of products sold without stock availability
+        df = df.withColumn('quantity', df['quantity'] - df['stock_quantity'])
+        # Filter out products with stock availability
+        df = df.filter(df['quantity'] > 0)
         # Sum the quantities of products sold without stock availability
         result_df = df.groupBy().agg(F.sum('quantity').alias('Total Excess Sales'))
         return result_df
