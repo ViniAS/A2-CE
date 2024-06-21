@@ -2,7 +2,9 @@
 
 from pyspark.sql import SparkSession
 import json
+import time
 
+TEMPO_ESPERA = 10
 # Load configuration from config.json
 with open('src/config.json') as f:
     config = json.load(f)
@@ -44,32 +46,41 @@ def update_last_processed_id(file_path, table_name, last_id):
     with open(file_path, 'w') as file:
         json.dump(ids, file)
 
-# Acha o último id processado
-last_ids = get_last_processed_ids(path_to_last_processed_id)
-last_id_user_behavior = last_ids.get('user_behavior_log', 0)
-last_id_shop = last_ids.get('shop_data', 0)
-last_id_product = last_ids.get('product_data', 0)
+while(True):
 
-# Query para pegar os dados incrementais
-query_user_behavior = f"(SELECT * FROM user_behavior_log WHERE id > {last_id_user_behavior}) AS incremental_load_user_behavior"
-query_shop = f"(SELECT * FROM shop_data WHERE id > {last_id_shop}) AS incremental_load_shop"
-query_product = f"(SELECT * FROM product_data WHERE id > {last_id_product}) AS incremental_load_product"
+    # Acha o último id processado
+    last_ids = get_last_processed_ids(path_to_last_processed_id)
+    last_id_user_behavior = last_ids.get('user_behavior_log', 0)
+    last_id_shop = last_ids.get('shop_data', 0)
+    last_id_product = last_ids.get('product_data', 0)
 
-# Load data from PostgreSQL
-user_behavior_data = spark.read.jdbc(url_target, query_user_behavior, properties=db_properties_target)
-shop_data = spark.read.jdbc(url_target, query_shop, properties=db_properties_target)
-product_data = spark.read.jdbc(url_target, query_product, properties=db_properties_target)
+    # Query para pegar os dados incrementais
+    query_user_behavior = f"(SELECT * FROM user_behavior_log WHERE id > {last_id_user_behavior}) AS incremental_load_user_behavior"
+    query_shop = f"(SELECT * FROM shop_data WHERE id > {last_id_shop}) AS incremental_load_shop"
+    query_product = f"(SELECT * FROM product_data WHERE id > {last_id_product}) AS incremental_load_product"
+
+    # Load data from PostgreSQL
+    user_behavior_data = spark.read.jdbc(url_target, query_user_behavior, properties=db_properties_target)
+    shop_data = spark.read.jdbc(url_target, query_shop, properties=db_properties_target)
+    product_data = spark.read.jdbc(url_target, query_product, properties=db_properties_target)
 
 
-# Join tables
-df2 = product_data.join(shop_data, ['shop_id'], how='inner')
-df = user_behavior_data.join(df2, user_behavior_data['button_product_id'] == df2['product_id'], how='inner')
+    # Join tables
+    df2 = product_data.join(shop_data, ['shop_id'], how='inner')
+    df = user_behavior_data.join(df2, user_behavior_data['button_product_id'] == df2['product_id'], how='inner')
 
-df = df.select('button_product_id', 'date', 'user_author_id', 'shop_id', 'action')
+    df = df.select('button_product_id', 'date', 'user_author_id', 'shop_id', 'action')
 
-# Save data to PostgreSQL
-df.write.jdbc(url=url_processed, table='pre_process_q3', mode='append', properties=db_properties_processed)
+    if df.count() == 0:
+        print('No new data to process. Waiting for new data...')
+        time.sleep(TEMPO_ESPERA)
+        continue
 
-# Update last processed id
-update_last_processed_id(path_to_last_processed_id, 'user_behavior_log', user_behavior_data.agg({"id": "max"}).collect()[0][0])
-update_last_processed_id(path_to_last_processed_id, 'shop_data', shop_data.agg({"id": "max"}).collect()[0][0])
+    # Save data to PostgreSQL
+    df.write.jdbc(url=url_processed, table='pre_process_q3', mode='append', properties=db_properties_processed)
+
+    # Update last processed id
+    update_last_processed_id(path_to_last_processed_id, 'user_behavior_log', user_behavior_data.agg({"id": "max"}).collect()[0][0])
+    update_last_processed_id(path_to_last_processed_id, 'shop_data', shop_data.agg({"id": "max"}).collect()[0][0])
+    update_last_processed_id(path_to_last_processed_id, 'product_data', product_data.agg({"id": "max"}).collect()[0][0])
+    time.sleep(TEMPO_ESPERA)

@@ -1,4 +1,4 @@
-# Pega colunas do target_db e faz operações de join e deixar a tabela pronta para ser acessada pela pergunta 1
+# Pega colunas do target_db e faz operações de join e deixar a tabela pronta para ser acessada pelo monitor de preços
 import time
 from pyspark.sql import SparkSession
 import json
@@ -26,11 +26,11 @@ db_properties_processed = {
 }
 
 spark = SparkSession.builder \
-    .appName("Pre Process Q1") \
+    .appName("Pre Process Monitor") \
     .config("spark.jars", jdbc_driver_path) \
     .getOrCreate()
 
-path_to_last_processed_id = 'json/last_processed_id_q1.json'
+path_to_last_processed_id = 'json/last_processed_id_monitor.json'
 
 def get_last_processed_ids(file_path):
     try:
@@ -50,30 +50,41 @@ while True:
     # Acha o último id processado
     last_ids = get_last_processed_ids(path_to_last_processed_id)
     last_id_order = last_ids.get('order_data', 0)
+    last_id_product = last_ids.get('product_data', 0)
     last_id_shop = last_ids.get('shop_data', 0)
 
     # Query para pegar os dados incrementais
     query_order = f"(SELECT * FROM order_data WHERE id > {last_id_order}) AS incremental_load_order"
+    query_product = f"(SELECT * FROM product_data WHERE id > {last_id_product}) AS incremental_load_product"
     query_shop = f"(SELECT * FROM shop_data WHERE id > {last_id_shop}) AS incremental_load_shop"
 
     # Load data from PostgreSQL
     order_data = spark.read.jdbc(url_target, query_order, properties=db_properties_target)
+    product_data = spark.read.jdbc(url_target, query_product, properties=db_properties_target)
     shop_data = spark.read.jdbc(url_target, query_shop, properties=db_properties_target)
 
 
     # Join tables
-    df = order_data.join(shop_data, order_data.shop_id == shop_data.shop_id, how='inner')
-    df = df.select(order_data.purchase_date, order_data.quantity, order_data.product_id, shop_data.shop_id)
-
+    product_data.show()
+    shop_data.show()
+    order_data.show()
+    product_data = product_data.select(['product_id', 'name', 'id'])
+    order_data = order_data.select(['product_id', 'price', 'purchase_date', 'shop_id', 'id'])
+    df_0 = order_data.join(shop_data, ['shop_id'], how='inner')
+    df = df_0.join(product_data, ['product_id'], how='inner')
+    
+    df = df.select(['name', 'price', 'purchase_date', 'shop_name', product_data['product_id']])
+    
     if df.count() == 0:
         print("No new data to process. Waiting for new data...")
         time.sleep(TEMPO_ESPERA)
         continue
     # Save data to PostgreSQL
-    df.write.jdbc(url=url_processed, table='pre_process_q1', mode='append', properties=db_properties_processed)
+    df.write.jdbc(url=url_processed, table='pre_process_monitor', mode='append', properties=db_properties_processed)
 
     # Update last processed id
     update_last_processed_id(path_to_last_processed_id, 'order_data', order_data.agg({"id": "max"}).collect()[0][0])
+    update_last_processed_id(path_to_last_processed_id, 'product_data', product_data.agg({"id": "max"}).collect()[0][0])
     update_last_processed_id(path_to_last_processed_id, 'shop_data', shop_data.agg({"id": "max"}).collect()[0][0])
     time.sleep(TEMPO_ESPERA)
 

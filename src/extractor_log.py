@@ -3,6 +3,7 @@ from pyspark.sql import SparkSession
 import json
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, TimestampType
 import os
+import time
 
 # Configuration
 NUM_FILES = 1000  # Number of files to process per execution
@@ -117,4 +118,6 @@ def main():
     spark.stop()
 
 if __name__ == '__main__':
-    main()
+    while True:
+        main()
+        time.sleep(60)

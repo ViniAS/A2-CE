@@ -84,7 +84,9 @@ def plot_metric(column, data, x_axis, y_axis, title, avg_value):
     fig.update_xaxes(rangeslider_visible=True)
     fig.add_hline(y=avg_value, line_color="#c084fc")
     fig.update_xaxes(title_text=x_axis)
+    fig.update_yaxes(range=[0, max(y_values)])
     fig.update_yaxes(title_text=y_axis)
+    print(f'{y_axis}: { max(y_values)}')
     column.plotly_chart(fig)
 
 

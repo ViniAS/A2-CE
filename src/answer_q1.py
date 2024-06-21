@@ -26,15 +26,13 @@ def answer_q1(spark, store_id=None):
             df = df.filter(df['shop_id'] == store_id)
 
         df = df.withColumn('purchase_date', F.to_timestamp('purchase_date'))
-        min_minute = df.agg({'purchase_date': 'min'}).collect()[0][0]
-        max_minute = df.agg({'purchase_date': 'max'}).collect()[0][0]
         df = df.withColumn('minute', F.date_format('purchase_date', 'yyyy-MM-dd HH:mm:00'))
         
-        # df = df.select(['minute', 'quantity'])
         df = df.groupBy('minute').agg(F.sum('quantity').alias('quantity'))
         df = df.sort('minute')
-
-        number = df.withColumn('quantity', F.col('quantity')/(max_minute - min_minute).total_seconds()/60)
+        # quantity divided by the number of minutes(number of lines in the df)
+        lines_count = df.count()
+        number = df.withColumn('quantity', F.col('quantity')/lines_count)
         number = number.groupBy().agg(F.sum('quantity').alias('quantity'))
         return df, number
     except Exception as e:
@@ -47,7 +45,7 @@ if __name__ == "__main__":
         .appName("Answer Q1") \
         .config("spark.jars", jdbc_driver_path) \
         .getOrCreate()
-    df, number = answer_q1(spark)
+    df, number = answer_q1(spark, store_id=2)
     df.show()
     print(number)
     number.show()
