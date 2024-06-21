@@ -4,6 +4,9 @@ from collections import defaultdict
 from sortedcontainers import SortedList
 import asyncio
 import aio_pika
+import os
+
+broker_url = os.getenv('CELERY_BROKER_URL', 'pyamqp://guest@localhost//')
 
 # Define the conditions for coupons
 CONDITIONS = [
@@ -15,7 +18,7 @@ CONDITIONS = [
 store_purchases = defaultdict(lambda: defaultdict(SortedList))
 
 async def connect_to_rabbitmq():
-    return await aio_pika.connect_robust("amqp://guest:guest@localhost/")
+    return await aio_pika.connect_robust(broker_url)
 
 async def send_coupon_to_queue(user_id, store_id):
     connection = await connect_to_rabbitmq()

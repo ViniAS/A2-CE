@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y gcc libpq-dev \
 
 COPY src/webhook.py webhook.py
 
-COPY src/webhook_queue.py webhook_queue.py
+COPY src/webhook_queue.py src/webhook_queue.py
 
-COPY src/config.json config.json
+COPY src/config.json src/config.json
 
 ENV CELERY_BROKER_URL=amqp://broker:5672/
 

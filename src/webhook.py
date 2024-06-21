@@ -1,6 +1,6 @@
 from flask import Flask, request
 
-from webhook_queue import store_user_behavior
+from src.webhook_queue import store_user_behavior
 
 app = Flask(__name__)
 

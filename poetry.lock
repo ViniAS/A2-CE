@@ -1535,6 +1535,17 @@ files = [
 dev = ["black", "coverage", "mypy", "pytest", "twine"]
 
 [[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
+    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
+]
+
+[[package]]
 name = "streamlit"
 version = "1.35.0"
 description = "A faster way to build and share data apps"
@@ -1871,4 +1882,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "306e3811df2051677b306580b95c0ab9eb2d2063be506b57a0f6afeff3f4a78f"
+content-hash = "a51f747225f00722c4087fec5fa4513901553c83860e3953dcd511a85255cd17"

@@ -23,7 +23,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "processed_db" <<-E
     CREATE TABLE pre_process_q2 (shop_id INT,
     price INT,
     quantity INT,
-    purchase_date TIMESTAMP,
+    purchase_date TIMESTAMP
 );
 EOSQL
 
@@ -69,6 +69,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "processed_db" <<-E
     shop_name TEXT,
     product_id INT
 );
+EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
     CREATE TABLE user_behavior_log (id SERIAL PRIMARY KEY,

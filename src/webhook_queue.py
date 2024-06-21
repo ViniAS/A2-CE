@@ -11,7 +11,7 @@ broker_url = os.getenv('CELERY_BROKER_URL', 'pyamqp://guest@localhost//')
 
 app = Celery('tasks', broker=broker_url)
 
-with open('config.json') as f:
+with open('src;config.json') as f:
     config = json.load(f)
 
 # Path do driver JDBC do PostgreSQL
@@ -56,13 +56,13 @@ def store_user_behavior(message: str):
                 user_author_id, 
                 action, 
                 date, 
-                button_product_id, 
+                button_product_id 
             ) VALUES (%s, %s, %s, %s)""",
             (
                 message['user_author_id'],
                 message['action'],
                 message['date'],
-                message['button_product_id'],
+                message['button_product_id']
             )
         )
 
