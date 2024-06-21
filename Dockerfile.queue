@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.10-buster
 
 WORKDIR /app
 
@@ -8,5 +8,8 @@ RUN pip install --no-cache-dir -r requirements_webhook.txt
 
 COPY src/webhook_queue.py webhook_queue.py
 
+COPY src/config.json config.json
+
+ENV CELERY_BROKER_URL=amqp://broker:5672/
 
 CMD ["celery", "-A", "webhook_queue", "worker", "--loglevel=info", "--concurrency=10"]

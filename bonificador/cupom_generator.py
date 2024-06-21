@@ -4,6 +4,8 @@ from collections import defaultdict
 from sortedcontainers import SortedList
 import asyncio
 import aio_pika
+import os
+
 
 # Define the conditions for coupons
 CONDITIONS = [
@@ -11,11 +13,16 @@ CONDITIONS = [
     (100_000, 3600 * 6)  # 100,000 monetary units in the last hour
 ]
 
+
+# Obter a URL do broker de uma variável de ambiente ou usar padrão
+RABBITMQ_URL = os.getenv('RABBITMQ_URL', 'amqp://guest:guest@localhost/')
+
 # Initialize store purchases
 store_purchases = defaultdict(lambda: defaultdict(SortedList))
 
 async def connect_to_rabbitmq():
-    return await aio_pika.connect_robust("amqp://guest:guest@localhost/")
+    return await aio_pika.connect_robust(RABBITMQ_URL)
+
 
 async def send_coupon_to_queue(user_id, store_id):
     connection = await connect_to_rabbitmq()

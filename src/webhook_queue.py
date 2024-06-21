@@ -4,26 +4,30 @@ from psycopg2 import pool
 import json
 import datetime
 from urllib.parse import urlparse
+import os
 # Run with "celery -A webhook_queue worker --loglevel=INFO --concurrency=10"
 
+broker_url = os.getenv('CELERY_BROKER_URL', 'pyamqp://guest@localhost//')
 
-app = Celery('tasks', broker='pyamqp://guest@localhost//')
+app = Celery('tasks', broker=broker_url)
 
 with open('config.json') as f:
     config = json.load(f)
 
 # Path do driver JDBC do PostgreSQL
-jdbc_driver_path = "../jdbc/postgresql-42.7.3.jar"
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
 db_target_url = urlparse(config['db_target_url'])
+
+print(db_target_url)
 
 # Propriedades de conexão com o banco de dados
 db_properties = {
     "user": config['db_target_user'],
     "password": config['db_target_password'],
-    "host": db_target_url.hostname,
-    "port": db_target_url.port,
-    "dbname": db_target_url.path[1:]
+    "host": config['host'],
+    "port": config['port'],
+    "dbname": "target_db"
 }
 
 db_pool = psycopg2.pool.SimpleConnectionPool(1, 20, **db_properties)
@@ -39,9 +43,6 @@ def store_user_behavior(message: str):
     
     message = json.loads(message)
 
-    # Convert date from timestamp to datetime
-    message['date'] = datetime.datetime.fromtimestamp(message['date'])
-
     # Get a connection from the pool
     conn = db_pool.getconn()
 
@@ -56,18 +57,12 @@ def store_user_behavior(message: str):
                 action, 
                 date, 
                 button_product_id, 
-                stimulus,
-                component,
-                text_content
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            ) VALUES (%s, %s, %s, %s)""",
             (
                 message['user_author_id'],
                 message['action'],
                 message['date'],
                 message['button_product_id'],
-                message['stimulus'],
-                message['component'],
-                message['text_content']
             )
         )
 

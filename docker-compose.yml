@@ -1,0 +1,152 @@
+version: '3'
+services:
+  broker:
+    image: 'rabbitmq:3-management'
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+  psql:
+    build: 
+      context: .
+      dockerfile: Dockerfile.psql
+    ports:
+      - '5432:5432'
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.queue
+    image: worker
+    depends_on:
+      - broker
+      - psql
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbit//
+      - PYTHONUNBUFFERED=1
+  webhook:
+    build: 
+      context: .
+      dockerfile: Dockerfile.webhook
+    command: ["python", "webhook.py"]
+    image: webhook
+    ports:
+      - '55555:55555'
+    depends_on:
+      - worker
+      - broker
+    environment:
+      - PYTHONUNBUFFERED=1
+  historico:
+    build: 
+      context: .
+      dockerfile: ./Dockerfile.historico
+    image: historico
+    depends_on:
+      - psql
+  loja:
+    build:
+      context: .
+      dockerfile: Dockerfile.loja
+    image: loja
+    depends_on:
+      - psql
+  web_gen:
+    build:
+      context: .
+      dockerfile: Dockerfile.web_gen
+    image: web_gen
+    depends_on:
+      - webhook
+  dash:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dash
+    image: dash
+    ports:
+      - '8050:8050'
+    depends_on:
+      - psql
+  q1:
+    build:
+      context: .
+      dockerfile: Dockerfile.q1
+    image: q1
+    depends_on:
+      - psql
+  q2:
+    build:
+      context: .
+      dockerfile: Dockerfile.q2
+    image: q2
+    depends_on:
+      - psql
+  q3:
+    build:
+      context: .
+      dockerfile: Dockerfile.q3
+    image: q3
+    depends_on:
+      - psql
+  q4:
+    build:
+      context: .
+      dockerfile: Dockerfile.q4
+    image: q4
+    depends_on:
+      - psql
+  q5:
+    build:
+      context: .
+      dockerfile: Dockerfile.q5
+    image: q5
+    depends_on:
+      - psql
+  q6:
+    build:
+      context: .
+      dockerfile: Dockerfile.q6
+    image: q6
+    depends_on:
+      - psql
+  extract_db:
+    build:
+      context: .
+      dockerfile: Dockerfile.extract_db
+    image: extract_db
+    depends_on:
+      - psql
+  txt_behaviour:
+    build:
+      context: .
+      dockerfile: Dockerfile.txt_behaviour
+    image: txt_behaviour
+    volumes:
+      - shared_data:/app/data
+    depends_on:
+      - psql
+  extract_txt:
+    build:
+      context: .
+      dockerfile: Dockerfile.extract_txt
+    image: extract_txt
+    volumes:
+      - shared_data:/app/data
+    depends_on:
+      - psql
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitor
+    image: monitor
+    depends_on:
+      - psql
+  bonificador:
+    build:
+      context: .
+      dockerfile: Dockerfile.bonificador
+    image: bonificador
+    depends_on:
+      - psql
+volumes:
+  shared_data:
+  
+      

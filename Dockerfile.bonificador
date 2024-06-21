@@ -1,0 +1,17 @@
+FROM python:3.10-buster
+
+
+WORKDIR /app
+
+
+COPY bonificador/requirements_bonificador.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+COPY bonificador/cupom_generator.py cupom_generator.py
+
+# Configuração da URL do RabbitMQ via variável de ambiente
+ENV RABBITMQ_URL=amqp://broker:5672/
+
+
+CMD ["python", "cupom_generator.py"] 

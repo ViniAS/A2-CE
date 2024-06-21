@@ -21,6 +21,8 @@ spark = SparkSession.builder \
      .config("spark.jars", jdbc_driver_path) \
      .getOrCreate()
 
+RABBITMQ_URL = os.getenv('RABBITMQ_URL', 'amqp://guest:guest@localhost/')
+
 # Database connection properties
 url = config['db_source_url']
 properties = {
@@ -30,7 +32,7 @@ properties = {
 }
 
 def connect_to_rabbitmq():
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters('RABBITMQ_URL'))
     channel = connection.channel()
     return connection, channel
 

@@ -22,6 +22,8 @@ num_processes = settings.NUM_PROCESSES
 num_users = settings.NUM_USERS
 sleep_time = settings.SLEEP_TIME
 
+time.sleep(5) # Espera o broker subir
+
 processes = []
 for _ in range(num_processes):
     p = multiprocessing.Process(target=user_process, args=(num_users, sleep_time))
