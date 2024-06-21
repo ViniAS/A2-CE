@@ -65,9 +65,9 @@ while True:
 
 
     # Join tables
-    product_data.show()
-    shop_data.show()
-    order_data.show()
+    # product_data.show()
+    # shop_data.show()
+    # order_data.show()
     product_data = product_data.select(['product_id', 'name', 'id'])
     order_data = order_data.select(['product_id', 'price', 'purchase_date', 'shop_id', 'id'])
     df_0 = order_data.join(shop_data, ['shop_id'], how='inner')

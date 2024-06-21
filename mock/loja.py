@@ -78,12 +78,12 @@ def consume_cupons_queue():
     channel.start_consuming()
 
 # Start the cupons queue consumer in a separate thread
-consumer_thread = threading.Thread(target=consume_cupons_queue)
-consumer_thread.start()
+# consumer_thread = threading.Thread(target=consume_cupons_queue)
+# consumer_thread.start()
 
-lojas = ['compras_loja' + str(i) for i in range(1, 11)]
-connection, channel = connect_to_rabbitmq()
-declare_queues(channel, lojas)
+# lojas = ['compras_loja' + str(i) for i in range(1, 11)]
+# connection, channel = connect_to_rabbitmq()
+# declare_queues(channel, lojas)
 
 MOCK = _mock.MOCK()
 MOCK.curr_user_id = 1_000
@@ -115,10 +115,10 @@ while True:
             price = order['price']
             
             purchase = generate_purchase(user_id, product_id, quantity, purchase_date, payment_date, shipping_date, delivery_date, shop_id, price)
-            send_purchase(channel, "compras_loja"+str(shop_id), purchase) 
+            # send_purchase(channel, "compras_loja"+str(shop_id), purchase) 
     except Exception as e:
         print(f"Error: {e}")
-        connection.close()
+        # connection.close()
     try:
         df = spark.createDataFrame(order_data)
         df.write.jdbc(url=url, table="order_data", mode="append", properties=properties)

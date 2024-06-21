@@ -51,7 +51,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "processed_db" <<-E
     shop_id INT,
     action TEXT,
     date TIMESTAMP,
-    purchase_date TIMESTAMP
+    purchase_date TIMESTAMP,
+    product_id INT
 );
 EOSQL
 
@@ -81,12 +82,12 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQ
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
-    CREATE TABLE consumer_data (id SERIAL PRIMARY KEY,
+    CREATE TABLE consumer_data (id INT,
     user_id INT);
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
-    CREATE TABLE product_data (id SERIAL PRIMARY KEY,
+    CREATE TABLE product_data (id INT,
     product_id INT,
     name TEXT,
     price INT,
@@ -94,7 +95,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQ
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
-    CREATE TABLE stock_data (id SERIAL PRIMARY KEY,
+    CREATE TABLE stock_data (id INT,
     product_id INT,
     quantity INT,
     shop_id INT);
@@ -103,16 +104,17 @@ EOSQL
 
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
-    CREATE TABLE order_data (id SERIAL PRIMARY KEY,
+    CREATE TABLE order_data (id INT,
     user_id INT,
     product_id INT,
     quantity INT,
     purchase_date TIMESTAMP,
-    shop_id INT, price INT);
+    shop_id INT,
+     price INT);
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
-    CREATE TABLE shop_data (id SERIAL PRIMARY KEY,
+    CREATE TABLE shop_data (id INT,
     shop_id INT,
      shop_name TEXT);
 EOSQL
@@ -120,7 +122,7 @@ EOSQL
 
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
-    CREATE TABLE audit_log (id SERIAL PRIMARY KEY,
+    CREATE TABLE log_audit (id SERIAL PRIMARY KEY,
     user_author_id INT,
     action TEXT,
     action_description TEXT,
@@ -129,15 +131,16 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQ
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
-    CREATE TABLE failure_notification_log (id SERIAL PRIMARY KEY,
+    CREATE TABLE log_failure (id SERIAL PRIMARY KEY,
     component TEXT,
     severity TEXT,
     message TEXT, 
-    text_content TEXT, date TIMESTAMP);
+    text_content TEXT,
+     date TIMESTAMP);
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "target_db" <<-EOSQL
-    CREATE TABLE debug_log (id SERIAL PRIMARY KEY,
+    CREATE TABLE log_debug (id SERIAL PRIMARY KEY,
     message TEXT, 
     text_content TEXT, 
     date TIMESTAMP);
@@ -165,7 +168,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     shop_id INT);
 EOSQL
 
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DBget_db" <<-EOSQL
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE TABLE stock_data (id SERIAL PRIMARY KEY,
     product_id INT,
     quantity INT,
@@ -174,11 +177,7 @@ EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE TABLE shop_data (id SERIAL PRIMARY KEY,
-    shop_id INT,
-    name TEXT,
-    city TEXT,
-    address TEXT,
-    phone TEXT);
+    shop_id INT, shop_name TEXT);
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL

@@ -22,7 +22,7 @@ num_processes = settings.NUM_PROCESSES
 num_users = settings.NUM_USERS
 sleep_time = settings.SLEEP_TIME
 
-time.sleep(5) # Espera o broker subir
+time.sleep(15) # Espera o broker subir
 
 processes = []
 for _ in range(num_processes):

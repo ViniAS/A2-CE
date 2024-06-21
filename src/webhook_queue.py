@@ -2,7 +2,7 @@ from celery import Celery
 import psycopg2
 from psycopg2 import pool
 import json
-import datetime
+from datetime import datetime
 from urllib.parse import urlparse
 import os
 # Run with "celery -A webhook_queue worker --loglevel=INFO --concurrency=10"
@@ -43,7 +43,7 @@ def store_user_behavior(message: str):
     
     message = json.loads(message)
 
-    date = datetime.fromtimestamp(message['date'])
+    message['date'] = datetime.fromtimestamp(message['date'])
 
     # Get a connection from the pool
     conn = db_pool.getconn()
