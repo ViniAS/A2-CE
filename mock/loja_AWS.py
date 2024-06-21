@@ -29,11 +29,13 @@ url = config['rds_url']
 properties = {
     "user": config['rds_user'],
     "password": config['rds_password'],
-    "driver": "org.postgresql.Driver"
+    "driver": "org.postgresql.Driver",
+    "dbname": "historico-instance-1"
 }
 
 # Initialize boto3 client for SQS
 sqs_client = boto3.client('sqs', region_name='us-east-1')  # Replace 'your-region' with the appropriate AWS region
+rds_client = boto3.client('rds', region_name='us-east-1')  # Replace 'your-region' with the appropriate AWS region
 
 # URLs of the SQS queues
 LOJA_QUEUES = [f'https://sqs.us-east-1.amazonaws.com/832766163897/compras_loja{i}' for i in range(1, 11)]  # Replace with your SQS queue URLs

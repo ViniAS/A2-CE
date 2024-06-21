@@ -16,7 +16,7 @@
 
     "rds_user":"Lunardon",
     "rds_password":"compesca",
-    "rds_url":"jdbc:postgresql://historico-instance-1.cndydjvqouhu.us-east-1.rds.amazonaws.com:5432/historico/historico-instance-1"
+    "rds_url":"jdbc:postgresql://historico-instance-1.cndydjvqouhu.us-east-1.rds.amazonaws.com:5432"
 
 }
 
