@@ -14,6 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY jdbc/postgresql-42.7.3.jar jdbc/postgresql-42.7.3.jar 
 
+ENV RABBITMQ_URL=amqp://broker:5672/
+
 COPY src/config.json src/config.json
 COPY mock/mock_utils.py mock_utils.py
 COPY mock/loja.py loja.py
