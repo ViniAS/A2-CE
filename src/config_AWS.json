@@ -1,8 +1,8 @@
 
 
 {
-    "db_source_url": "historico.cluster-cndydjvqouhu.us-east-1.rds.amazonaws.com/historico",
-    "db_source_name": "historico",
+    "db_source_url": "historico-instance-1.cndydjvqouhu.us-east-1.rds.amazonaws.com/historico-instance-1",
+    "db_source_name": "historico-instance-1",
     "db_source_user": "Lunardon",
     "db_source_password": "compesca",
 
@@ -12,6 +12,11 @@
 
     "db_processed_url": "jdbc:postgresql://localhost:5432/processed_db",
     "db_processed_user": "postgres",
-    "db_processed_password": "senha"
+    "db_processed_password": "senha",
+
+    "rds_user":"Lunardon",
+    "rds_password":"compesca",
+    "rds_url":"jdbc:postgresql://historico-instance-1.cndydjvqouhu.us-east-1.rds.amazonaws.com:5432/historico/historico-instance-1"
+
 }
 
