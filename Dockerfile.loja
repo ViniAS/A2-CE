@@ -12,7 +12,6 @@ WORKDIR /app
 COPY mock/requirements_mock.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download PostgreSQL JDBC driver
 COPY jdbc/postgresql-42.7.3.jar jdbc/postgresql-42.7.3.jar 
 
 COPY src/config.json src/config.json

@@ -139,6 +139,13 @@ services:
     image: monitor
     depends_on:
       - psql
+  bonificador:
+    build:
+      context: .
+      dockerfile: Dockerfile.bonificador
+    image: bonificador
+    depends_on:
+      - psql
 volumes:
   shared_data:
   
