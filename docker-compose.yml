@@ -1,39 +1,59 @@
 version: '3'
 services:
-  broker:
-    image: 'rabbitmq:3-management'
-    ports:
-      - '5672:5672'
-      - '15672:15672'
+  # broker:
+  #   image: 'rabbitmq:3-management'
+  #   ports:
+  #     - '5672:5672'
+  #     - '15672:15672'
   psql:
     build: 
       context: .
       dockerfile: Dockerfile.psql
     ports:
       - '5432:5432'
-  worker:
+    command: >
+      bash -c "rm -rf /var/lib/postgresql/data/* &&
+             docker-entrypoint.sh postgres"
+  
+  dash:
     build:
       context: .
-      dockerfile: Dockerfile.queue
-    image: worker
-    depends_on:
-      - broker
-      - psql
-    environment:
-      - PYTHONUNBUFFERED=1
-  webhook:
-    build: 
-      context: .
-      dockerfile: Dockerfile.webhook
-    command: ["python", "webhook.py"]
-    image: webhook
+      dockerfile: Dockerfile.dash
+    image: dash
     ports:
-      - '55555:55555'
+      - '8050:8050'
     depends_on:
-      - worker
-      - broker
-    environment:
-      - PYTHONUNBUFFERED=1
+      - psql
+  # worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.queue
+  #   image: worker
+  #   depends_on:
+  #     - broker
+  #     - psql
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  # webhook:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile.webhook
+  #   command: ["python", "webhook.py"]
+  #   image: webhook
+  #   ports:
+  #     - '55555:55555'
+  #   depends_on:
+  #     - worker
+  #     - broker
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  # web_gen:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.web_gen
+  #   image: web_gen
+  #   depends_on:
+  #     - webhook
   historico:
     build: 
       context: .
@@ -48,22 +68,7 @@ services:
     image: loja
     depends_on:
       - psql
-  web_gen:
-    build:
-      context: .
-      dockerfile: Dockerfile.web_gen
-    image: web_gen
-    depends_on:
-      - webhook
-  dash:
-    build: 
-      context: .
-      dockerfile: Dockerfile.dash
-    image: dash
-    ports:
-      - '8050:8050'
-    depends_on:
-      - psql
+
   q1:
     build:
       context: .
@@ -138,13 +143,7 @@ services:
     image: monitor
     depends_on:
       - psql
-  bonificador:
-    build:
-      context: .
-      dockerfile: Dockerfile.bonificador
-    image: bonificador
-    depends_on:
-      - psql
+
 volumes:
   shared_data:
   
