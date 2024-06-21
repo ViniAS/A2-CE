@@ -11,7 +11,7 @@ para rodar o projeto localmente. Em outro terminal, use o comando
 ```
 docker compose logs -f dash
 ```
-para acessar a URl do streamlit. Copie a URl "Network URL" e cole no navegador para acessar o dashboard.
+para acessar a URL do streamlit. Copie a URL "Network URL" e cole no navegador para acessar o dashboard.
 
 Note que o dashboard pode apresentar erro de não encontrar dados, isso pode ser porque como são muitos processos para rodar em uma máquina local, pode demorar para tudo chegar no banco de dados final. Se isso aconter, esperar alguns segundos e recarregar a página pode resolver.
 
