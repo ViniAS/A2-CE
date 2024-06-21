@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements_webhook.txt
 
 COPY src/webhook_queue.py webhook_queue.py
 
-COPY src/config.json src/config.json
+COPY src/config.json config.json
 
 ENV CELERY_BROKER_URL=amqp://broker:5672/
 

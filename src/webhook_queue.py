@@ -11,7 +11,7 @@ broker_url = os.getenv('CELERY_BROKER_URL', 'pyamqp://guest@localhost//')
 
 app = Celery('tasks', broker=broker_url)
 
-with open('src;config.json') as f:
+with open('config.json') as f:
     config = json.load(f)
 
 # Path do driver JDBC do PostgreSQL
@@ -42,6 +42,8 @@ def store_user_behavior(message: str):
     """
     
     message = json.loads(message)
+
+    date = datetime.fromtimestamp(message['date'])
 
     # Get a connection from the pool
     conn = db_pool.getconn()
