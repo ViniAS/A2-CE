@@ -9,14 +9,14 @@ ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
 
 WORKDIR /app
 
-COPY jdbc/postgresql-42.7.3.jar jdbc/postgresql-42.7.3.jar 
-
-COPY mock/requirements_mock.txt requirements.txt
+COPY src/requirements_pre_process.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY jdbc/postgresql-42.7.3.jar jdbc/postgresql-42.7.3.jar 
+
 COPY src/config.json src/config.json
-COPY mock/mock_utils.py mock_utils.py
-COPY mock/historico.py historico.py
+COPY src/pre_process_monitor.py pre_process_monitor.py
 
+RUN mkdir json
 
-CMD ["python", "historico.py"]
+CMD ["python", "pre_process_monitor.py"]

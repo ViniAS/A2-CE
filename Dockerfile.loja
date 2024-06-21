@@ -1,10 +1,20 @@
-FROM python:3.10-silm
+FROM python:3.10-buster
+
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    apt-get clean;
+
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
+
 
 WORKDIR /app
 
 COPY mock/requirements_mock.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY jdbc/postgresql-42.7.3.jar jdbc/postgresql-42.7.3.jar 
+
+COPY src/config.json src/config.json
 COPY mock/mock_utils.py mock_utils.py
 COPY mock/loja.py loja.py
 
