@@ -2,6 +2,9 @@
 
 from pyspark.sql import SparkSession
 import json
+import time
+
+TEMPO_ESPERA = 10
 
 # Load configuration from config.json
 with open('src/config.json') as f:
@@ -44,27 +47,34 @@ def update_last_processed_id(file_path, table_name, last_id):
     with open(file_path, 'w') as file:
         json.dump(ids, file)
 
-# Acha o último id processado
-last_ids = get_last_processed_ids(path_to_last_processed_id)
-last_id_order = last_ids.get('order_data', 0)
-last_id_stock = last_ids.get('stock_data', 0)
+while True:
 
-# Query para pegar os dados incrementais
-query_order = f"(SELECT * FROM order_data WHERE id > {last_id_order}) AS incremental_load_order"
-query_stock = f"(SELECT * FROM stock_data WHERE id > {last_id_stock}) AS incremental_load_stock"
+    # Acha o último id processado
+    last_ids = get_last_processed_ids(path_to_last_processed_id)
+    last_id_order = last_ids.get('order_data', 0)
+    last_id_stock = last_ids.get('stock_data', 0)
 
-# Load data from PostgreSQL
-order_data = spark.read.jdbc(url_target, query_order, properties=db_properties_target)
-stock_data = spark.read.jdbc(url_target, query_stock, properties=db_properties_target)
+    # Query para pegar os dados incrementais
+    query_order = f"(SELECT * FROM order_data WHERE id > {last_id_order}) AS incremental_load_order"
+    query_stock = f"(SELECT * FROM stock_data WHERE id > {last_id_stock}) AS incremental_load_stock"
 
-# Join tables
-stock_data = stock_data.withColumnRenamed('quantity', 'stock_quantity')
-df = order_data.join(stock_data, order_data['product_id'] == stock_data['stock_quantity'])
-df = df.select(stock_data.stock_quantity, order_data.quantity, order_data.shop_id)
+    # Load data from PostgreSQL
+    order_data = spark.read.jdbc(url_target, query_order, properties=db_properties_target)
+    stock_data = spark.read.jdbc(url_target, query_stock, properties=db_properties_target)
 
-# Save data to PostgreSQL
-df.write.jdbc(url=url_processed, table='pre_process_q6', mode='append', properties=db_properties_processed)
+    # Join tables
+    stock_data = stock_data.withColumnRenamed('quantity', 'stock_quantity')
+    df = order_data.join(stock_data, order_data['product_id'] == stock_data['stock_quantity'])
+    df = df.select(stock_data.stock_quantity, order_data.quantity, order_data.shop_id)
+    if df.count() == 0:
+        print('No new data to process')
+        print('Waiting for new data...')
+        time.sleep(TEMPO_ESPERA)
+        continue
+    # Save data to PostgreSQL
+    df.write.jdbc(url=url_processed, table='pre_process_q6', mode='append', properties=db_properties_processed)
 
-# Update last processed id
-update_last_processed_id(path_to_last_processed_id, 'order_data', order_data.agg({"id": "max"}).collect()[0][0])
-update_last_processed_id(path_to_last_processed_id, 'stock_data', stock_data.agg({"id": "max"}).collect()[0][0])
+    # Update last processed id
+    update_last_processed_id(path_to_last_processed_id, 'order_data', order_data.agg({"id": "max"}).collect()[0][0])
+    update_last_processed_id(path_to_last_processed_id, 'stock_data', stock_data.agg({"id": "max"}).collect()[0][0])
+    time.sleep(TEMPO_ESPERA)

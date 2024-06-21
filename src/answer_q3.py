@@ -29,15 +29,12 @@ def answer_q3(spark, store_id=None):
         df = df.filter(df['action'] == 'click')
 
         df = df.withColumn('date', F.to_timestamp('date'))
-        #get min minute and max minute
-        min_minute = df.agg({'date': 'min'}).collect()[0][0]
-        max_minute = df.agg({'date': 'max'}).collect()[0][0]
         df = df.withColumn('minute', F.date_format('date', 'yyyy-MM-dd HH:mm:00'))
         
         df = df.groupBy('button_product_id', 'minute').agg(F.countDistinct('user_author_id').alias('unique_users'))
         df = df.sort('minute')
-        # divide by max minutes - min minutes
-        number = df.withColumn('unique_users', F.col('unique_users')/(max_minute - min_minute).total_seconds()/60)
+        lines_count = df.count()
+        number = df.withColumn('unique_users', F.col('unique_users')/lines_count)
         number = number.groupBy().agg(F.sum('unique_users').alias('unique_users'))
         return df, number
     except Exception as e:

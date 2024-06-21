@@ -92,10 +92,15 @@ def plot_metric(column, data, x_axis, y_axis, title, avg_value):
     x_values = [row[x_axis] for row in data_list]
     y_values = [row[y_axis] for row in data_list]
 
-    fig = px.line(x=x_values, y=y_values, title=title, labels={0: x_axis, 1: y_axis}, color_discrete_sequence=['#5f4b8b'])
+    fig = px.line(x=x_values, y=y_values, title=title, color_discrete_sequence=['#5f4b8b'])
     fig.update_xaxes(rangeslider_visible=True)
     fig.add_hline(y=avg_value, line_color="#c084fc")
+    fig.update_xaxes(title_text=x_axis)
+    fig.update_yaxes(range=[0, max(y_values)])
+    fig.update_yaxes(title_text=y_axis)
+    print(f'{y_axis}: { max(y_values)}')
     column.plotly_chart(fig)
+
 
 def display_ranking(df_ranking):
     """
