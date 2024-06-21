@@ -17,4 +17,4 @@ Note que o dashboard pode apresentar erro de não encontrar dados, isso pode ser
 
 O docker compose não está rodando o webhook por padrão, pelo mesmo problema de termos muitos processos rodando ao mesmo tempo. Se você quiser testar com o webhook descomente as linhas 27 a 56 do docker-compose.yaml.
 
-O bonificador/cumpo_generator.py não foi configurado para rodar com os docker, por isso não está no docker compose e o mock/lojas.py está com o código relacionado ao bonificado comentado.
+O bonificador/cupom_generator.py não foi configurado para rodar com os docker, por isso não está no docker compose e o mock/lojas.py está com o código relacionado ao bonificado comentado.
