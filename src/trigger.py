@@ -2,7 +2,7 @@ from extractor_log import extract_log
 import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 import time
-jdbc_driver_path = "/usr/share/java/postgresql-42.2.23.jar"
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 spark = SparkSession.builder \
         .appName("Extract Log") \
         .config("spark.jars", jdbc_driver_path) \

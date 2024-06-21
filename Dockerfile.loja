@@ -6,20 +6,18 @@ RUN apt-get update && \
 
 ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
 
-# Download PostgreSQL JDBC driver
-RUN wget https://jdbc.postgresql.org/download/postgresql-42.2.23.jar -P /usr/share/java/
-
-# Add PostgreSQL JDBC driver to classpath
-ENV CLASSPATH /usr/share/java/postgresql-42.2.23.jar
 
 WORKDIR /app
 
 COPY mock/requirements_mock.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Download PostgreSQL JDBC driver
+COPY jdbc/postgresql-42.7.3.jar jdbc/postgresql-42.7.3.jar 
+
 COPY src/config.json src/config.json
 COPY mock/mock_utils.py mock_utils.py
-COPY mock/historico.py historico.py
+COPY mock/loja.py loja.py
 
 
-CMD ["python", "historico.py"]
+CMD ["python", "loja.py"]

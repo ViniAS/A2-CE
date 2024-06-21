@@ -7,7 +7,7 @@ import os
 # Configuration
 NUM_FILES = 1000  # Number of files to process per execution
 LOG_DIR = "data"
-JDBC_DRIVER_PATH = "/usr/share/java/postgresql-42.2.23.jar"
+JDBC_DRIVER_PATH = "jdbc/postgresql-42.7.3.jar"
 PATH_TO_LAST_PROCESSED_ID = 'json/last_processed_id_log.json'
 CONFIG_PATH = 'src/config.json'
 

@@ -6,15 +6,11 @@ RUN apt-get update && \
 
 ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
 
-# Download PostgreSQL JDBC driver
-RUN wget https://jdbc.postgresql.org/download/postgresql-42.2.23.jar -P /usr/share/java/
-
-# Add PostgreSQL JDBC driver to classpath
-ENV CLASSPATH /usr/share/java/postgresql-42.2.23.jar
 
 WORKDIR /app
 
 
+COPY jdbc/postgresql-42.7.3.jar jdbc/postgresql-42.7.3.jar 
 
 COPY src /app/src
 

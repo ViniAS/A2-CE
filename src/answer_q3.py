@@ -6,7 +6,7 @@ from pyspark.sql import SparkSession
 import json
 
 # Path to the PostgreSQL JDBC driver
-jdbc_driver_path = "/usr/share/java/postgresql-42.2.23.jar"
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
 # Load configuration from config.json
 with open('src/config.json') as f:

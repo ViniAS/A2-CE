@@ -16,7 +16,7 @@ import json
 
 # Inicia a sessão Spark
 # spark = SparkSession.builder.appName("Dashboard").getOrCreate()
-jdbc_driver_path = "/usr/share/java/postgresql-42.2.23.jar"
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
 # Cria uma sessão Spark
 spark = SparkSession.builder \

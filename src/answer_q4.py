@@ -11,7 +11,7 @@ with open('src/config.json') as f:
     config = json.load(f)
 
 # Path to the PostgreSQL JDBC driver
-jdbc_driver_path = "/usr/share/java/postgresql-42.2.23.jar"
+jdbc_driver_path = "jdbc/postgresql-42.7.3.jar"
 
 url_processed = config['db_processed_url']
 db_properties_processed = {

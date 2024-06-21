@@ -8,5 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY mock/mock_utils.py mock_utils.py
 COPY mock/txt_behaviour.py txt_behaviour.py
 
+RUN mkdir data
 
 CMD ["python", "txt_behaviour.py"]

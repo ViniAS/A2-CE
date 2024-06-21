@@ -65,4 +65,74 @@ services:
       - '8050:8050'
     depends_on:
       - psql
+  q1:
+    build:
+      context: .
+      dockerfile: Dockerfile.q1
+    image: q1
+    depends_on:
+      - psql
+  q2:
+    build:
+      context: .
+      dockerfile: Dockerfile.q2
+    image: q2
+    depends_on:
+      - psql
+  q3:
+    build:
+      context: .
+      dockerfile: Dockerfile.q3
+    image: q3
+    depends_on:
+      - psql
+  q4:
+    build:
+      context: .
+      dockerfile: Dockerfile.q4
+    image: q4
+    depends_on:
+      - psql
+  q5:
+    build:
+      context: .
+      dockerfile: Dockerfile.q5
+    image: q5
+    depends_on:
+      - psql
+  q6:
+    build:
+      context: .
+      dockerfile: Dockerfile.q6
+    image: q6
+    depends_on:
+      - psql
+  extract_db:
+    build:
+      context: .
+      dockerfile: Dockerfile.extract_db
+    image: extract_db
+    depends_on:
+      - psql
+  txt_behaviour:
+    build:
+      context: .
+      dockerfile: Dockerfile.txt_behaviour
+    image: txt_behaviour
+    volumes:
+      - shared_data:/app/data
+    depends_on:
+      - psql
+  extract_txt:
+    build:
+      context: .
+      dockerfile: Dockerfile.extract_txt
+    image: extract_txt
+    volumes:
+      - shared_data:/app/data
+    depends_on:
+      - psql
+volumes:
+  shared_data:
+  
       
