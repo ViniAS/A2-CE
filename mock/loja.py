@@ -1,4 +1,4 @@
-# Registros live (BD)
+import threading
 import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 import json
@@ -6,8 +6,9 @@ import os
 import time
 import mock_utils as _mock
 import random
+import pika
 
-# Load configuration from config.json
+#Load configuration from config.json
 with open("src/config.json") as f:
     config = json.load(f)
 
@@ -28,6 +29,62 @@ properties = {
     "driver": "org.postgresql.Driver"
 }
 
+def connect_to_rabbitmq():
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    return connection, channel
+
+def declare_queues(channel, lojas):
+    for loja in lojas:
+        channel.queue_declare(queue=loja)
+    channel.queue_declare(queue="cupons", durable=True)  # Ensure the "cupons" queue is durable
+
+def generate_purchase(user_id, product_id, quantity, purchase_date, payment_date, shipping_date, delivery_date, shop_id, price):
+    return {
+        'user_id': user_id,
+        'product_id': product_id,
+        'quantity': quantity,
+        'purchase_date': purchase_date,
+        'payment_date': payment_date,
+        'shipping_date': shipping_date,
+        'delivery_date': delivery_date,
+        'shop_id': shop_id,
+        'price': price
+    }
+
+def send_purchase(channel, loja, purchase):
+    try:
+        channel.basic_publish(
+            exchange='',
+            routing_key=loja,
+            body=json.dumps(purchase)
+        )
+        print(f"Enviado: {purchase}")
+    except pika.exceptions.AMQPError as e:
+        print(f"Failed to send message: {e}")
+
+def consume_cupons_queue():
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue="cupons", durable=True)  # Ensure the "cupons" queue is durable
+
+    def callback(ch, method, properties, body):
+        #print(f"Coupon consumed and discarded: {body}")
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    channel.basic_consume(queue="cupons", on_message_callback=callback, auto_ack=False)
+
+    print(' [*] Waiting for coupons. To exit press CTRL+C')
+    channel.start_consuming()
+
+# Start the cupons queue consumer in a separate thread
+# consumer_thread = threading.Thread(target=consume_cupons_queue)
+# consumer_thread.start()
+
+# lojas = ['compras_loja' + str(i) for i in range(1, 11)]
+# connection, channel = connect_to_rabbitmq()
+# declare_queues(channel, lojas)
+
 MOCK = _mock.MOCK()
 MOCK.curr_user_id = 1_000
 MOCK.curr_product_id = 1_000
@@ -40,6 +97,28 @@ while True:
     # Random int between 1 and 10
     qtd = random.randint(50, 150)
     order_data = [MOCK.order_data(get_new_date=False) for _ in range(qtd)]
+    try:
+        for order in order_data:
+            user_id = order['user_id']
+            product_id = order['product_id']
+            quantity = order['quantity']
+            purchase_date = order['purchase_date']
+            # Convert datetime to timestamp
+            purchase_date = purchase_date.timestamp()
+            payment_date = order['payment_date']
+            payment_date = payment_date.timestamp()
+            shipping_date = order['shipping_date']
+            shipping_date = shipping_date.timestamp()
+            delivery_date = order['delivery_date']
+            delivery_date = delivery_date.timestamp()
+            shop_id = order['shop_id']
+            price = order['price']
+            
+            purchase = generate_purchase(user_id, product_id, quantity, purchase_date, payment_date, shipping_date, delivery_date, shop_id, price)
+            # send_purchase(channel, "compras_loja"+str(shop_id), purchase) 
+    except Exception as e:
+        print(f"Error: {e}")
+        # connection.close()
     try:
         df = spark.createDataFrame(order_data)
         df.write.jdbc(url=url, table="order_data", mode="append", properties=properties)

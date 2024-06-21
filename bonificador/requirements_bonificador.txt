@@ -1,0 +1,8 @@
+aio-pika==9.4.1
+aiormq==6.8.0
+asyncio==3.4.3
+idna==3.7
+multidict==6.0.5
+pamqp==3.3.0
+sortedcontainers==2.4.0
+yarl==1.9.4

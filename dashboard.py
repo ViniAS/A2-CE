@@ -12,6 +12,7 @@ from src.answer_q4 import answer_q4
 from src.answer_q5 import answer_q5
 from src.answer_q6 import answer_q6
 from src.monitor_precos import monitor
+import json
 
 # Inicia a sessão Spark
 # spark = SparkSession.builder.appName("Dashboard").getOrCreate()
@@ -24,6 +25,17 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 loading_times = {}
+
+with open('src/config.json') as f:
+    config = json.load(f)
+
+url = config['db_source_url']
+db_properties = {
+    "user": config['db_source_user'],
+    "password": config['db_source_password'],
+    "driver": "org.postgresql.Driver"
+}
+
 
 def fetch_data(store=None):
     """
@@ -80,10 +92,15 @@ def plot_metric(column, data, x_axis, y_axis, title, avg_value):
     x_values = [row[x_axis] for row in data_list]
     y_values = [row[y_axis] for row in data_list]
 
-    fig = px.line(x=x_values, y=y_values, title=title, labels={0: x_axis, 1: y_axis}, color_discrete_sequence=['#5f4b8b'])
+    fig = px.line(x=x_values, y=y_values, title=title, color_discrete_sequence=['#5f4b8b'])
     fig.update_xaxes(rangeslider_visible=True)
     fig.add_hline(y=avg_value, line_color="#c084fc")
+    fig.update_xaxes(title_text=x_axis)
+    fig.update_yaxes(range=[0, max(y_values)])
+    fig.update_yaxes(title_text=y_axis)
+    print(f'{y_axis}: { max(y_values)}')
     column.plotly_chart(fig)
+
 
 def display_ranking(df_ranking):
     """
@@ -230,7 +247,7 @@ def configure_dashboard_page():
             st.experimental_rerun()
     
     # Access the shop_data table
-    df_stores = spark.read.jdbc(url="jdbc:postgresql://localhost:5432/source_db", table="shop_data", properties={"user": "postgres", "password": "senha", "driver": "org.postgresql.Driver"})
+    df_stores = spark.read.jdbc(url=url, table="shop_data", properties={"user": "postgres", "password": "senha", "driver": "org.postgresql.Driver"})
     store_names = ["All"] + [row['shop_name'] for row in df_stores.collect()]
 
     col1, col2 = st.columns([1, 3])
