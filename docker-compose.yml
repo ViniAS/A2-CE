@@ -132,6 +132,13 @@ services:
       - shared_data:/app/data
     depends_on:
       - psql
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitor
+    image: monitor
+    depends_on:
+      - psql
 volumes:
   shared_data:
   
